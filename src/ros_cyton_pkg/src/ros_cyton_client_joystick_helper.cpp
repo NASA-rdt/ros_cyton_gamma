@@ -179,9 +179,9 @@ bool Send_Joint_Pose(double joint_pose_array[])
 	return true;
 }
 
-const double GRIPPER_MIN = 0.00625;
+const double GRIPPER_MIN = 0.0015;
 const double GRIPPER_MAX = 0.015;
-
+const float GRIPPER_GAIN = 0.001;
 double gripper_value = 0.0085;//somewhere in the middle?{ 0.00625 , 0.008, 0.015 };
 
 ///Function will send the gripper value 
@@ -287,23 +287,28 @@ bool handle_axis( unsigned axis, float value ){
 
 void cmndHandle( const std_msgs::Int32::ConstPtr& msg){
 	int command = msg->data;
-	if( command == 1){
-		ROS_INFO("Now moving to position %d!",command);
-		Modify_EE_Pose("point_end_effector", saved_pos_array[0]);
-	}else if( command == 2){
-		ROS_INFO("Now moving to position %d!",command);
-		Modify_EE_Pose("point_end_effector", saved_pos_array[1]);
-	}else if( command == 3){
-		ROS_INFO("Now moving to position %d!",command);
-		Modify_EE_Pose("point_end_effector", saved_pos_array[2]);
-	}else if( command == 4){
-		ROS_INFO("Now moving to position %d!",command);
-		Modify_EE_Pose("frame_end_effector", saved_pos_array[3]);
-	}else if( command == 5){
-		ROS_INFO("Now moving to position DEFAULT!");
+	switch(command){
+	case 0:
+		//this wont happen
+		break;
+	case 1:
+
+		std_msgs::String execute;
+		std::stringstream ss1;
+		ss1 <<"test";
+		execute.data = ss1.str();
+		execute_pub.publish(execute);
+
+		break;
+	case 2:
+	case 3:
+	case 4:
+		Modify_EE_Pose("point_end_effector", saved_pos_array[command-1]);
+		break;
+	case 5:
 		Modify_EE_Pose("point_end_effector", pos_array);
-	}
-	else{
+		break;
+	default:
 		ROS_INFO("COMMAND: %d",command);
 	}
 }
@@ -323,14 +328,17 @@ void joyHandle( const sensor_msgs::Joy::ConstPtr& msg){
 		//ROS_INFO("Button %d is now: %d",i,msg->buttons[i]);}
 	}
 }
-
-void rotateHandle( const std_msgs::Float32::ConstPtr& msg){
-//	Modify_Gripper_Value();
+float map(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
-float GRIPPER_GAIN = 0.001;
-
+void rotateHandle( const std_msgs::Float32::ConstPtr& msg){
+	Modify_Gripper_Value();
+}
 void scaleHandle( const std_msgs::Float32::ConstPtr& msg){
-	Modify_Gripper_Value( GRIPPER_GAIN * msg->data );
+	float value = map(msg->data,0.1f,10,GRIPPER_MIN,GRIPPER_MAX);
+	ROS_INFO("Mapping Scale from %f to %f.",msg->data,value);
+	Modify_Gripper_Value( value );
 }
 
 bool sendExecute(){
@@ -338,8 +346,8 @@ bool sendExecute(){
 		return false;
 	}
 	setChanged(false);
-        std_msgs::String execute;
 
+	std_msgs::String execute;
 	std::stringstream ss1;
 	ss1 <<"yes";
 	execute.data = ss1.str();
@@ -408,7 +416,7 @@ int main(int argc, char **argv)
 
 
 	//ros::spin();
-	ros::Rate loop_rate(3);
+	ros::Rate loop_rate(30);//increase to thirty
 
 	while (ros::ok())
 	{

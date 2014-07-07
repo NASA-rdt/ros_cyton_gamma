@@ -80,6 +80,43 @@ bool Send_Joint_Values(vector<double> joints)
 
 }
 
+float Get_Joint_Values()
+
+{
+
+     ROS_INFO("Inside GetJoint function");
+
+     EcRealVector jointposition = cytonCommands.GetJointsExample();//Joint Get Example
+
+     size_t size = jointposition.size();
+
+     std::cout<<"Current Joint Angles: ( ";
+     for(size_t ii=0; ii<size; ++ii)
+     {
+    	 ROS_INFO("Get joint_%d is %f",ii,jointposition[ii]);
+     }
+
+     return true;
+
+}
+
+bool testJoint(int limb, float value){
+
+	ROS_INFO("Inside TestJoint function");
+	EcRealVector jointposition = cytonCommands.GetJointsExample();
+
+	ROS_INFO("Inside TestJoint function2");
+	if (limb < jointposition.size()){
+		jointposition[limb] = value;
+	}
+
+	ROS_INFO("Inside TestJoint function, moving %d from %f to %f",limb,jointposition[limb],value);
+
+    RC_CHECK(cytonCommands.MoveJointsExample(jointposition, .000001));//Joint Movement Example
+
+	ROS_INFO("Finished TestJoint function");
+}
+
 
 //----------------------------------------------------------------------
 ///Function will send the end_effector pose  
@@ -236,7 +273,11 @@ void execute_Callback(const std_msgs::String::ConstPtr& msg)
 	{
 		ROS_INFO("Skipping Execution");
 	}
-  
+	else{
+		ROS_INFO("Getting Joint Values (ELSE)");
+		Get_Joint_Values();
+	}
+
 }
 
 

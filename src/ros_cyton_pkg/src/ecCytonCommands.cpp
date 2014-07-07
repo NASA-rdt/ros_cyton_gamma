@@ -120,7 +120,35 @@ EcRealVector EcCytonCommands::GetJointsExample
 }
 */
 
+//////
+EcRealVector EcCytonCommands::GetJointsExample
+   (
+   )const
+{
+   EcBoolean retVal=EcTrue;
+   setEndEffectorSet(JOINT_CONTROL_EE_SET);
+   EcSLEEPMS(500);
+   EcRealVector currentJoints;//vector of EcReals that holds the set of joint angles
+   retVal &= getJointValues(currentJoints);
 
+   size_t size = currentJoints.size();
+   if(size < jointPosition.size())
+   {
+      size = currentJoints.size();
+   }
+   else if(size >= jointPosition.size())
+   {
+      size = jointPosition.size();
+   }
+
+   std::cout<<"Current Joint Angles: ( ";
+   for(size_t ii=0; ii<size; ++ii)
+   {
+      std::cout << currentJoints[ii] << "," ;
+      currentJoints[ii] = jointPosition[ii];
+   }
+   return currentJoints;
+}
 //----------------------------------joint commands test------------------------
 EcBoolean EcCytonCommands::MoveJointsExample
    (
