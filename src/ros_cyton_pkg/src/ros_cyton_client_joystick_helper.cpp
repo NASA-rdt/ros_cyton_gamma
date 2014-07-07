@@ -301,9 +301,13 @@ void cmndHandle( const std_msgs::Int32::ConstPtr& msg){
 
 		break;
 	case 2:
+		Modify_EE_Pose("point_end_effector", saved_pos_array[1]);
+		break;
 	case 3:
+		Modify_EE_Pose("point_end_effector", saved_pos_array[2]);
+		break;
 	case 4:
-		Modify_EE_Pose("point_end_effector", saved_pos_array[command-1]);
+		Modify_EE_Pose("point_end_effector", saved_pos_array[3]);
 		break;
 	case 5:
 		Modify_EE_Pose("point_end_effector", pos_array);
@@ -333,7 +337,7 @@ float map(float x, float in_min, float in_max, float out_min, float out_max)
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 void rotateHandle( const std_msgs::Float32::ConstPtr& msg){
-	Modify_Gripper_Value();
+	ROS_INFO("Rotating %f",msg->data)
 }
 void scaleHandle( const std_msgs::Float32::ConstPtr& msg){
 	float value = map(msg->data,0.1f,10,GRIPPER_MIN,GRIPPER_MAX);

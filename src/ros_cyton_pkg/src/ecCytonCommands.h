@@ -67,6 +67,10 @@ public:
       const EcReal angletolerance
       )const;
 
+   virtual EcRealVector GetJointsExample
+      (
+      )const;
+
 
    /// set the control descriptor for the simulation file on the server
    /// @param[in] endEffectorSetId  (EcU32) of the end effector set
