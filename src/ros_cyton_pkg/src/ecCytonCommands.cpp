@@ -132,20 +132,11 @@ EcRealVector EcCytonCommands::GetJointsExample
    retVal &= getJointValues(currentJoints);
 
    size_t size = currentJoints.size();
-   if(size < jointPosition.size())
-   {
-      size = currentJoints.size();
-   }
-   else if(size >= jointPosition.size())
-   {
-      size = jointPosition.size();
-   }
 
    std::cout<<"Current Joint Angles: ( ";
    for(size_t ii=0; ii<size; ++ii)
    {
       std::cout << currentJoints[ii] << "," ;
-      currentJoints[ii] = jointPosition[ii];
    }
    return currentJoints;
 }
@@ -312,6 +303,11 @@ EcBoolean EcCytonCommands::frameMovementExample
          EcPrint(Debug)<<"Achieved Pose"<<std::endl;
          achieved = EcTrue;
       }
+      ////added this:
+      else{
+    	  //std::cout<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
+      }
+      ////
    }
    return achieved;
 }
@@ -407,10 +403,11 @@ EcBoolean EcCytonCommands::pickAndPlaceExample
    //Move Joints
    MoveJointsExample(initJoints,.000001);
 
+
    //open the gripper
    if(cytonModel == "1500" || cytonModel == "300" )
    {
-      moveGripperExample(0.0078);
+      moveGripperExample(0.0149);
    }
    if(cytonModel == "1500R2" || cytonModel == "300PX" )
    {
@@ -437,7 +434,7 @@ EcBoolean EcCytonCommands::pickAndPlaceExample
       //close the gripper
       if(cytonModel == "1500" || cytonModel == "300" )
       {
-         moveGripperExample(-0.0078);
+         moveGripperExample(0.0015);
       }
       if(cytonModel == "1500R2" || cytonModel == "300PX" )
       {
@@ -462,7 +459,7 @@ EcBoolean EcCytonCommands::pickAndPlaceExample
       //Opem the gripper
       if(cytonModel == "1500" || cytonModel == "300" )
       {
-         moveGripperExample(0.0078);
+         moveGripperExample(0.0149);
       }
       if(cytonModel == "1500R2" || cytonModel == "300PX" )
       {
@@ -495,7 +492,7 @@ EcBoolean EcCytonCommands::pickAndPlaceExample
       //close the gripper
       if(cytonModel == "1500" || cytonModel == "300" )
       {
-         moveGripperExample(-0.0078);
+         moveGripperExample(0.0075);//(0.0015)//all the way closed
       }
       if(cytonModel == "1500R2" || cytonModel == "300PX" )
       {
@@ -503,8 +500,10 @@ EcBoolean EcCytonCommands::pickAndPlaceExample
       }
       EcSLEEPMS(1000);
 
-      desiredPose.setTranslation(EcVector(.1,.2,.15));
+
+      desiredPose.setTranslation(EcVector(.1,.2,.1));
       frameMovementExample(desiredPose);   
+
 
       desiredPose.setTranslation(EcVector(0,.2,.15));
       frameMovementExample(desiredPose);   
@@ -517,10 +516,10 @@ EcBoolean EcCytonCommands::pickAndPlaceExample
       frameMovementExample(desiredPose);   
 
 
-      //close the gripper
+      //open the gripper
       if(cytonModel == "1500" || cytonModel == "300" )
       {
-         moveGripperExample(0.0078);
+         moveGripperExample(0.0149);
       }
       if(cytonModel == "1500R2" || cytonModel == "300PX" )
       {
@@ -536,6 +535,203 @@ EcBoolean EcCytonCommands::pickAndPlaceExample
 
 }
 
+/////////////////
+
+EcBoolean EcCytonCommands::pickAndStackExample
+   (
+   const EcString& cytonModel,double pick ,double stack
+   )const
+{
+   EcRealVector initJoints(7);//vector of EcReals that holds the set of joint angles
+   initJoints[1]=-.7;
+   initJoints[3]=-.7;
+   initJoints[5]=-.7;
+
+   //Move Joints
+   MoveJointsExample(initJoints,.000001);
+
+
+   //open the gripper
+   if(cytonModel == "1500" || cytonModel == "300" )
+   {
+      moveGripperExample(0.0149);
+   }
+   if(cytonModel == "1500R2" || cytonModel == "300PX" )
+   {
+      moveGripperExample(0.0149);
+   }
+
+
+   if(cytonModel == "1500" || cytonModel == "1500R2")
+   {
+	   //removed, see pickAndPlace
+   }
+
+   if(cytonModel=="300" || cytonModel=="300PX" )
+   {
+      EcCoordinateSystemTransformation desiredPose;
+      desiredPose.setTranslation(EcVector(0,.2,.15));
+      EcOrientation orient;
+      orient.setFrom123Euler(0,0,EcPi/2);//set roll, pitch,yaw
+      desiredPose.setOrientation(orient);
+
+      setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
+
+      frameMovementExample(desiredPose);
+
+      desiredPose.setTranslation(EcVector(.1,.2,.15));
+      frameMovementExample(desiredPose);
+
+      desiredPose.setTranslation(EcVector(.1,.2,pick));
+      frameMovementExample(desiredPose);
+
+      //close the gripper
+      if(cytonModel == "1500" || cytonModel == "300" )
+      {
+         moveGripperExample(0.0076);//(0.0015)//all the way closed
+      }
+      if(cytonModel == "1500R2" || cytonModel == "300PX" )
+      {
+         moveGripperExample(0.001);
+      }
+      EcSLEEPMS(1000);
+
+
+      desiredPose.setTranslation(EcVector(.1,.2,.1));
+      frameMovementExample(desiredPose);
+
+
+      desiredPose.setTranslation(EcVector(0,.2,.15));
+      frameMovementExample(desiredPose);
+
+      orient.setFrom123Euler(0,0,EcPi);//set roll, pitch,yaw
+      desiredPose.setOrientation(orient);
+      frameMovementExample(desiredPose);
+
+      desiredPose.setTranslation(EcVector(0,.2,stack));
+      frameMovementExample(desiredPose);
+
+
+      //open the gripper
+      if(cytonModel == "1500" || cytonModel == "300" )
+      {
+         moveGripperExample(0.0149);
+      }
+      if(cytonModel == "1500R2" || cytonModel == "300PX" )
+      {
+         moveGripperExample(0.0149);
+      }
+      EcSLEEPMS(1000);
+
+      desiredPose.setTranslation(EcVector(0,.2,.15));
+      frameMovementExample(desiredPose);
+   }
+   return EcTrue;
+}
+
+//////////
+
+/////////////////
+
+EcBoolean EcCytonCommands::pickAndUnStackExample
+   (
+   const EcString& cytonModel,double pick ,double stack
+   )const
+{
+   EcRealVector initJoints(7);//vector of EcReals that holds the set of joint angles
+   initJoints[1]=-.7;
+   initJoints[3]=-.7;
+   initJoints[5]=-.7;
+
+   //Move Joints
+   MoveJointsExample(initJoints,.000001);
+
+
+   //open the gripper
+   if(cytonModel == "1500" || cytonModel == "300" )
+   {
+      moveGripperExample(0.0149);
+   }
+   if(cytonModel == "1500R2" || cytonModel == "300PX" )
+   {
+      moveGripperExample(0.0149);
+   }
+
+
+   if(cytonModel == "1500" || cytonModel == "1500R2")
+   {
+	   //removed, see pickAndPlace
+   }
+
+   if(cytonModel=="300" || cytonModel=="300PX" )
+   {
+
+      EcCoordinateSystemTransformation desiredPose;
+      desiredPose.setTranslation(EcVector(0,.2,.15));
+      EcOrientation orient;
+
+      setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
+
+      orient.setFrom123Euler(0,0,EcPi);//set roll, pitch,yaw
+      desiredPose.setOrientation(orient);
+      frameMovementExample(desiredPose);
+
+      desiredPose.setTranslation(EcVector(0,.2,stack));
+      frameMovementExample(desiredPose);
+
+      //close the gripper
+      if(cytonModel == "1500" || cytonModel == "300" )
+      {
+         moveGripperExample(0.0076);//(0.0015)//all the way closed
+      }
+      if(cytonModel == "1500R2" || cytonModel == "300PX" )
+      {
+         moveGripperExample(0.001);
+      }
+      EcSLEEPMS(1000);
+
+      //move up
+
+      desiredPose.setTranslation(EcVector(0,.2,.15));
+      frameMovementExample(desiredPose);
+
+      //rotate
+
+      orient.setFrom123Euler(0,0,EcPi/2);//set roll, pitch,yaw
+      desiredPose.setOrientation(orient);
+
+      frameMovementExample(desiredPose);
+
+
+      //move over
+      desiredPose.setTranslation(EcVector(.1,.2,.15));
+      frameMovementExample(desiredPose);
+      //move down
+      desiredPose.setTranslation(EcVector(.1,.2,pick));
+      frameMovementExample(desiredPose);
+      //open gripper
+      if(cytonModel == "1500" || cytonModel == "300" )
+      {
+         moveGripperExample(0.0149);//(0.0015)//all the way closed
+      }
+      if(cytonModel == "1500R2" || cytonModel == "300PX" )
+      {
+         moveGripperExample(0.0149);
+      }
+      EcSLEEPMS(1000);
+
+
+      desiredPose.setTranslation(EcVector(0.1,.2,.15));
+      frameMovementExample(desiredPose);
+////////move rotate open
+
+      desiredPose.setTranslation(EcVector(0,.2,.15));
+      frameMovementExample(desiredPose);
+   }
+   return EcTrue;
+}
+
+//////////
 
 
 EcBoolean EcCytonCommands::hardwareEnableTest

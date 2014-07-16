@@ -113,6 +113,25 @@ public:
       (
       const EcString& cytonModel
       )const;
+   ///sample sequence of remote command actions to pick up and place an object
+   // @param[in] cytonModel (EcString&) cyton version (300, 300PX, 1500, 1500R2)
+   /// @return         (EcBoolean) flag which returns the status of command
+   virtual EcBoolean pickAndStackExample
+      (
+      const EcString& cytonModel,
+      double pick,
+      double stack
+      )const;
+
+   ///sample sequence of remote command actions to pick up and place an object
+   // @param[in] cytonModel (EcString&) cyton version (300, 300PX, 1500, 1500R2)
+   /// @return         (EcBoolean) flag which returns the status of command
+   virtual EcBoolean pickAndUnStackExample
+      (
+      const EcString& cytonModel,
+      double pick,
+      double stack
+      )const;
 
 
    /// enable hardware test

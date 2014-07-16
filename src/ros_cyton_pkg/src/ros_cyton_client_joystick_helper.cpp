@@ -29,6 +29,8 @@ ros::Publisher joint_val_pub;
 ros::Publisher gripper_val_pub;
 ros::Publisher execute_pub;
 
+#define DO_NOT_MODIFY 1001
+int JOINT_WRIST = 1;
 
 bool changed = false;
 bool isChanged(){
@@ -178,6 +180,27 @@ bool Send_Joint_Pose(double joint_pose_array[])
 
 	return true;
 }
+bool Modify_Joint_Pose(int limb, double value){
+	std::vector<double> joint_pos(7);
+		std_msgs::String mode_msg;
+		std_msgs::String execute;
+		std_msgs::Float64MultiArray joint_pose;
+
+		joint_pos.assign(7,DO_NOT_MODIFY);//seven values at ridiculous threshold
+		if(limb < 8) joint_pos[limb] = value;//set
+		//joint_pos.insert(joint_pos.begin(),joint_pose_array,joint_pose_array+7);
+		ROS_INFO("Setting Joint_%d to %f",limb,value);
+
+		joint_pose.data = joint_pos;
+
+		std::stringstream ss;
+		ss <<"joint_mode";
+		mode_msg.data = ss.str();
+
+		///Sending messages
+		mode_pub.publish(mode_msg);
+		joint_val_pub.publish(joint_pose);
+}
 
 const double GRIPPER_MIN = 0.0015;
 const double GRIPPER_MAX = 0.015;
@@ -207,19 +230,17 @@ bool Modify_Gripper_Value(double value)
 
 {
 
-	gripper_value += value; //adjust gripper by value
-
-	if( gripper_value < GRIPPER_MIN){
-		gripper_value = GRIPPER_MIN;//set to min limit
+	if( value < GRIPPER_MIN){
+		value = GRIPPER_MIN;//set to min limit
 	}
-	else if( gripper_value > GRIPPER_MAX){
-		gripper_value = GRIPPER_MAX;//set to max limit
+	else if( value > GRIPPER_MAX){
+		value = GRIPPER_MAX;//set to max limit
 	}
 
 	std_msgs::Float64 gripper_val;//create data to send
-	gripper_val.data = gripper_value;//set data equal to value
+	gripper_val.data = value;//set data equal to value
 
-	ROS_INFO("Modifying Gripper Value (%f) to %f",value,gripper_value);
+	ROS_INFO("Modifying Gripper Value to %f",value);
 	setChanged(true);
 	gripper_val_pub.publish(gripper_val);
 
@@ -239,6 +260,12 @@ double saved_pos_array[4][6] = {
 		{0.04500000 , -0.261000 , 0.06400 , 0.020000 , 0.020000000 , 0.200000},
 };
 
+float map(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+
 bool handle_button( unsigned button, int state){
 	bool handled = false;
 	switch(button){
@@ -253,6 +280,20 @@ bool handle_button( unsigned button, int state){
 		if(state > 0){
 			ROS_INFO("CLOSING GRIPPER");//open gripper
 			handled = Modify_Gripper_Value(-0.001);
+		}
+		break;
+	case 2://B button
+		if(state > 0){
+			JOINT_WRIST--;
+			if(JOINT_WRIST < 0) JOINT_WRIST = 0;
+			ROS_INFO("Switching control to Joint_%d",JOINT_WRIST);//open gripper
+		}
+		break;
+	case 3://B button
+		if(state > 0){
+			JOINT_WRIST++;
+			if(JOINT_WRIST > 7) JOINT_WRIST = 7;
+			ROS_INFO("Switching control to Joint_%d",JOINT_WRIST);//open gripper
 		}
 		break;
 	}
@@ -285,16 +326,17 @@ bool handle_axis( unsigned axis, float value ){
 	return handled;
 }
 
-void cmndHandle( const std_msgs::Int32::ConstPtr& msg){
+void handle_command( const std_msgs::Int32::ConstPtr& msg){
 	int command = msg->data;
+
+		std_msgs::String execute;
+		std::stringstream ss1;
+
 	switch(command){
 	case 0:
 		//this wont happen
 		break;
 	case 1:
-
-		std_msgs::String execute;
-		std::stringstream ss1;
 		ss1 <<"test";
 		execute.data = ss1.str();
 		execute_pub.publish(execute);
@@ -317,7 +359,7 @@ void cmndHandle( const std_msgs::Int32::ConstPtr& msg){
 	}
 }
 
-void joyHandle( const sensor_msgs::Joy::ConstPtr& msg){
+void handle_joystick( const sensor_msgs::Joy::ConstPtr& msg){
 	bool moved = false;
 	for(unsigned i = 0; i < msg->axes.size(); i++){
 		if( handle_axis(i,msg->axes[i]) ){
@@ -332,19 +374,21 @@ void joyHandle( const sensor_msgs::Joy::ConstPtr& msg){
 		//ROS_INFO("Button %d is now: %d",i,msg->buttons[i]);}
 	}
 }
-float map(float x, float in_min, float in_max, float out_min, float out_max)
-{
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+void handle_rotate( const std_msgs::Float32::ConstPtr& msg){
+	//ROS_INFO("Rotating %f",msg->data);
+
+	//Modify_Joint_Pose(JOINT_WRIST,msg->data);
 }
-void rotateHandle( const std_msgs::Float32::ConstPtr& msg){
-	ROS_INFO("Rotating %f",msg->data)
+void handle_scale( const std_msgs::Float32::ConstPtr& msg){
+	//float value = map(msg->data,0.1f,10,GRIPPER_MIN,GRIPPER_MAX);
+	//ROS_INFO("Mapping Scale from %f to %f.",msg->data,value);
+	//Modify_Gripper_Value( value );
 }
-void scaleHandle( const std_msgs::Float32::ConstPtr& msg){
-	float value = map(msg->data,0.1f,10,GRIPPER_MIN,GRIPPER_MAX);
-	ROS_INFO("Mapping Scale from %f to %f.",msg->data,value);
-	Modify_Gripper_Value( value );
+void handle_joint_feedback( const std_msgs::Float64MultiArray::ConstPtr& msg){
+	ROS_INFO("Got joint feedback.");//
 }
 
+//A function to map a value from a range to a new range
 bool sendExecute(){
 	if( ! isChanged() ){
 		return false;
@@ -411,16 +455,17 @@ int main(int argc, char **argv)
 	gripper_val_pub = n.advertise<std_msgs::Float64>("gripper_value", 1);
 	execute_pub = n.advertise<std_msgs::String>("execute", 1);
 
-	ros::Subscriber sub = n.subscribe("joy",5,joyHandle);
-	ros::Subscriber subCmnd = n.subscribe("shield_commands/pos",50,cmndHandle);
-	ros::Subscriber subRot = n.subscribe("shield_commands/rotate",5,rotateHandle);
-	ros::Subscriber subScale = n.subscribe("shield_commands/scale",5,scaleHandle);
+	ros::Subscriber sub_joy = n.subscribe("joy",5,handle_joystick);
+	ros::Subscriber sub_cmd = n.subscribe("shield_commands/pos",50,handle_command);
+	ros::Subscriber sub_rot = n.subscribe("shield_commands/rotate",5,handle_rotate);
+	ros::Subscriber sub_scale = n.subscribe("shield_commands/scale",5,handle_scale);
+	ros::Subscriber sub_joint = n.subscribe("joint_array/feedback",5,handle_joint_feedback);
 
 
 
 
 	//ros::spin();
-	ros::Rate loop_rate(30);//increase to thirty
+	ros::Rate loop_rate(2);
 
 	while (ros::ok())
 	{
