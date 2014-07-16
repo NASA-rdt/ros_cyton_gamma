@@ -2,7 +2,7 @@
 ##Modified by William Baker, Summer 2014
 
 ###Launching the Cyton Viewer and ROS Nodes:
-####Note: run each line in a new terminal.
+####Note: run each section of code in a new terminal.
 ```
 #process to open the cytonViewer
 cd ~/robot/gamma_300/bin
