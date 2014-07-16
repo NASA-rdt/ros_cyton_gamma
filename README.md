@@ -1,8 +1,10 @@
+#ROS Cyton Gamma Package
+##Modified by William Baker, Summer 2014
 
-#open each of section in a new terminal
-
+###Launching the Cyton Viewer and ROS Nodes:
+####Note: run each line in a new terminal.
+```
 #process to open the cytonViewer
-
 cd ~/robot/gamma_300/bin
 sudo chmod 777 /dev/ttyUSB0 #give write access to arm
 #./cytonSetup #this only needs to be run first time
@@ -18,3 +20,4 @@ cd ~/catkin_ws/build/bin
 #process to open ros client
 cd ~/catkin_ws/build/bin
 ./ros_cyton_server
+```
