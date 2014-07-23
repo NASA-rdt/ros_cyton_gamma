@@ -10,6 +10,8 @@
 //------------------------------------------------------------------------------
 #include <foundCore/ecTypes.h>
 #include <foundCommon/ecCoordSysXForm.h>
+#include <vector>
+using namespace std;
 
 /// This class uses the remote commands API to communicate with the 
 //  ActinViewer/CytonViewer or ActinRT with the remoteCommandServerPlugin loaded.
@@ -68,6 +70,9 @@ public:
       )const;
 
    virtual EcRealVector GetJointsExample
+      (
+      )const;
+   virtual EcRealVector GetPoseExample
       (
       )const;
 
@@ -146,6 +151,22 @@ public:
    virtual EcBoolean resetToHome
        (
        )const;
+
+   /// move the robot to home position(zero joint angles for all the joints)
+   virtual EcBoolean MovementExample
+   (
+	   vector<double> ee_pose,
+	   const int ee_set
+   )const;
+
+   /// move the robot to home position(zero joint angles for all the joints)
+   virtual bool move
+   (
+   )const;
+   /// move the robot to home position(zero joint angles for all the joints)
+   virtual void initialize
+   (
+   );
 
 
 protected:
