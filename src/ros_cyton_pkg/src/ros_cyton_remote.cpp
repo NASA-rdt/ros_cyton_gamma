@@ -29,13 +29,16 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
+
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
+
+
 namespace bpo = boost::program_options;
 using namespace std;
 
 //global publisher
-bool moved = true;
-ros::Publisher joint_feedback_pub;
-ros::Publisher pose_feedback_pub;
+ros::Publisher joint_val_pub;
 #define JOINT_MODIFY 1000//a ridiculous threshold to determine if this value is to be used
 //------------------------------------------------------------------------------
 #define RC_CHECK(fun) do \
@@ -69,6 +72,62 @@ EcString cytonVersion;
 ///@param[in] joints(vector<double>) Joint values of arm in radians,
 ///@return[out] Status (bool) Return the status of function
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 bool Send_Joint_Values(vector<double> joints)
 
 {
@@ -82,38 +141,46 @@ bool Send_Joint_Values(vector<double> joints)
 
 }
 
-EcRealVector Get_Joints()
+float Get_Joint_Values()
 
 {
 
-	//ROS_INFO("Get_Joints");
+	ROS_INFO("Inside GetJoint function");
 
 	EcRealVector jointposition = cytonCommands.GetJointsExample();//Joint Get Example
 
+	size_t size = jointposition.size();
+
 	std_msgs::Float64MultiArray joint_pose;
 
-	joint_pose.data = jointposition;
-	joint_feedback_pub.publish(joint_pose);
-	return jointposition;
+	std::cout<<"Current Joint Angles: ( ";
+	for(size_t ii=0; ii<size; ++ii)
+	{
+		joint_values[ii] = jointposition[ii];
+		ROS_INFO("Get joint_%d is %f",ii,joint_values[ii]);
+	}
+	joint_pose.data = joint_values;
+	joint_val_pub.publish(joint_pose);
+	return true;
 
 }
 
-EcRealVector Get_Pose()
+bool testJoint(int limb, float value){
 
-{
+	ROS_INFO("Inside TestJoint function");
+	EcRealVector jointposition = cytonCommands.GetJointsExample();
 
-	//ROS_INFO("Get_Pose");
+	ROS_INFO("Inside TestJoint function2");
+	if (limb < jointposition.size()){
+		jointposition[limb] = value;
+	}
 
-	EcRealVector pose = cytonCommands.GetPoseExample();//Joint Get Example
+	ROS_INFO("Inside TestJoint function, moving %d from %f to %f",limb,jointposition[limb],value);
 
-	std_msgs::Float64MultiArray _pose;
+	RC_CHECK(cytonCommands.MoveJointsExample(jointposition, .000001));//Joint Movement Example
 
-	_pose.data = pose;
-	pose_feedback_pub.publish(_pose);
-	return pose;
-
+	ROS_INFO("Finished TestJoint function");
 }
-
 
 
 //----------------------------------------------------------------------
@@ -125,22 +192,12 @@ bool Send_EE_Pose(vector<double> ee_pose)
 
 {
 
-	ROS_INFO("Sending EE Pose...");
-	moved = true;
+
 	if(end_effector_type == "point_end_effector")
-		{
-			RC_CHECK(cytonCommands.MovementExample(ee_pose,0));
-		}
-	else if(end_effector_type == "frame_end_effector")
-	{
-		//RC_CHECK(cytonCommands.frameMovementExample(ee_pose));
-		RC_CHECK(cytonCommands.MovementExample(ee_pose,1));
-	}
-	/*if(end_effector_type == "point_end_effector")
 	{      
 		EcCoordinateSystemTransformation desiredPose;
 		desiredPose.setTranslation(EcVector(ee_pose[0],ee_pose[1],ee_pose[2]));
-		RC_CHECK(cytonCommands.frameMovementExample(desiredPose));
+		RC_CHECK(cytonCommands.pointMovementExample(desiredPose));
 	}
 	else if(end_effector_type == "frame_end_effector")
 	{
@@ -166,7 +223,7 @@ bool Send_EE_Pose(vector<double> ee_pose)
 
 			ROS_INFO("FINISHED a frame_end_effector move...");
 		}
-	}*/
+	}
 	return true;
 
 }
@@ -217,7 +274,7 @@ void ee_pose_Callback(const std_msgs::Float64MultiArray::ConstPtr& msg)
 
 	ee_pose.clear();
 	ee_pose = msg->data;
-	Send_EE_Pose(ee_pose);
+
 
 	ROS_INFO("X: [%f]", ee_pose[0]);
 	ROS_INFO("Y: [%f]", ee_pose[1]);
@@ -260,8 +317,6 @@ void gripper_Callback(const std_msgs::Float64::ConstPtr& msg)
 
 	gripper_value = msg->data;
 	ROS_INFO("Gripper value: [%f]", gripper_value);
-	moved = true;
-	cytonCommands.moveGripperExample(gripper_value);
 
 }
 
@@ -315,10 +370,12 @@ void execute_Callback(const std_msgs::String::ConstPtr& msg)
 
 	}
 	else{
-		ROS_INFO("Execute published no value");
+		ROS_INFO("Getting Joint Values (ELSE)");
+		Get_Joint_Values();
 	}
 
 }
+
 
 int main(int argc, char **argv)
 {
@@ -393,12 +450,10 @@ int main(int argc, char **argv)
 
 	///Connect to Actin Server
 	cytonCommands.openNetwork(ipAddress);
-	cytonCommands.initialize();//
 
 
 	//publishers list
-	joint_feedback_pub = n.advertise<std_msgs::Float64MultiArray>("joint_array/feedback", 1);
-	pose_feedback_pub = n.advertise<std_msgs::Float64MultiArray>("ee_pose/feedback", 1);
+	joint_val_pub = n.advertise<std_msgs::Float64MultiArray>("joint_array/feedback", 1);
 
 	///Subscriber List
 	ros::Subscriber mode_ = n.subscribe("mode", 100, mode_Callback);
@@ -409,35 +464,7 @@ int main(int argc, char **argv)
 	ros::Subscriber execute_ = n.subscribe("execute", 10, execute_Callback);
 
 
-	//ros::spin();
-
-	  ros::Rate loop_rate(30);
-	  bool there = !cytonCommands.move();
-	  while (ros::ok())
-	  {
-		  if(moved)//moved
-		  {
-			  bool now = cytonCommands.move();
-			  //ROS_INFO("&*&*&position. %s %s",there?"There":"NotThere",now?"Now":"NotNow");
-			  if ( there !=  now ){
-				  if (now)
-				  {
-					  ROS_INFO("Reached position");//. %s %s",there?"There":"NotThere",now?"Now":"NotNow");
-				  	  moved = false;
-				  }
-				  else
-				  {
-					  ROS_INFO("Moving to new position.");
-				  }
-				  there = now;
-			  }
-		  }
-		  Get_Joints();
-		  Get_Pose();
-		  ros::spinOnce();
-		  loop_rate.sleep();
-	  }
-
+	ros::spin();
 	// %EndTag(SPIN)%
 
 	cytonCommands.closeNetwork();
