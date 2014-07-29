@@ -25,7 +25,10 @@
 #define JOINT_CONTROL_EE_SET 0xFFFFFFFF
 
 
-boost::mutex myMutex;
+const double GRIPPER_MIN = 0.0015;
+const double GRIPPER_MAX = 0.015;
+
+boost::mutex poseLock, executeLock;
 EcCoordinateSystemTransformation myPose;
 EcReal myGripper;
 
@@ -53,6 +56,7 @@ void EcCytonCommands::initialize(){
 	getActualPlacement(actualEEPlacement);
 	myPose = actualEEPlacement.offsetTransformations()[0].coordSysXForm();
 	myGripper = 0.015;
+	setExecuting(EcTrue);
 }
 //----------------------------------destructor---------------------------------
 EcCytonCommands::~EcCytonCommands
@@ -175,20 +179,21 @@ EcRealVector EcCytonCommands::GetPoseExample
 	pose[1] = translation.y();
 	pose[2] = translation.z();
 
-	pose[3] = orientation[0];
-	pose[4] = orientation[1];
-	pose[5] = orientation[2];
+	orientation.get123Euler(pose[3],pose[4],pose[5]);
+//	pose[3] = orientation[0];
+//	pose[4] = orientation[1];
+//	pose[5] = orientation[2];
 
 	return pose;
 
 }
 
 //----------------------------------joint commands test------------------------
-bool EcCytonCommands::move( )const{
+EcCoordinateSystemTransformation EcCytonCommands::move( )const{
 
 
 	EcBoolean achieved = EcFalse;
-	myMutex.lock();
+	poseLock.lock();
 	EcCoordinateSystemTransformation desiredPose = myPose;
 	EcReal gripperPos = myGripper;
 	/*if (myPose){
@@ -232,7 +237,7 @@ bool EcCytonCommands::move( )const{
 	setDesiredPlacement(desiredEEPlacement,0);
 */
 
-	myMutex.unlock();
+	poseLock.unlock();
 
 
 	EcPrint(Debug) << "Moving "<<std::endl;
@@ -244,6 +249,7 @@ bool EcCytonCommands::move( )const{
 
 	//get the transformation between the actual and desired
 	offset=(actualCoord.inverse()) * desiredCoord;
+	return offset;/*
 	//EcPrint(Debug)<<
 	//std::cout<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
 
@@ -256,13 +262,68 @@ bool EcCytonCommands::move( )const{
 		//std::cout<<"Desired pose:  x: "<<desiredPose.translation().x()<< " y: " <<desiredPose.translation().y()<<" z: " <<desiredPose.translation().z()<<std::endl;
 		//std::cout<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
 	}
-	return achieved;
+	return achieved;*/
+}
+
+EcBoolean EcCytonCommands::ModifyMovementExample( vector<double> ee_rate , int ee_set)const{
+
+	EcBoolean retVal=EcTrue;
+	EcCoordinateSystemTransformation desiredPose;
+
+
+	boost::mutex::scoped_lock lock(poseLock);
+	EcVector currentTran = myPose.translation();
+	//ee_rate.resize(current.size());//make sure same size
+	for ( int i = 0; i < 3; i++ ){
+		currentTran[i] += ee_rate[i];
+	}
+	desiredPose.setTranslation(currentTran);
+
+	//std::cout<<"Desired pose:  x: "<<desiredPose.translation().x()<< " y: " <<desiredPose.translation().y()<<" z: " <<desiredPose.translation().z()<<std::endl;
+
+	if( ee_set == FRAME_EE_SET){
+		EcOrientation currentOrient = myPose.orientation();
+
+		double roll, pitch, yaw;
+		currentOrient.get123Euler(roll,pitch,yaw);
+
+		roll+= ee_rate[3];
+		pitch+= ee_rate[4];
+		yaw+= ee_rate[5];
+
+		std::cout<<"Orientation: < "<<roll<<" , "<<pitch<<" , "<<yaw<<" >"<<std::endl;
+
+		currentOrient.setFrom123Euler(roll,pitch,yaw);
+		desiredPose.setOrientation(currentOrient);
+		setEndEffectorSet(FRAME_EE_SET);
+	}
+	else if ( ee_set == POINT_EE_SET){
+		std::cout<<"Point_EE_mode";
+		setEndEffectorSet(POINT_EE_SET);
+	}
+	myPose = desiredPose;
+
+
+	if( fabs( ee_rate[6] ) > 0 ){
+		myGripper += ee_rate[6];
+		if( myGripper > GRIPPER_MAX){
+			myGripper = GRIPPER_MAX;
+		}
+		else if( myGripper < GRIPPER_MIN){
+			myGripper = GRIPPER_MIN;
+		}
+
+		std::cout<<"Setting Gripper to: "<<myGripper<<std::endl;
+		moveGripperExample(myGripper);
+	}
+
+	return retVal;
 }
 
 EcBoolean EcCytonCommands::MovementExample( vector<double> ee_pose , int ee_set)const{
 
 	EcBoolean retVal=EcTrue;
-	//boost::mutex::scoped_lock lock(myMutex);
+	//boost::mutex::scoped_lock lock(poseLock);
 	//EcCoordinateSystemTransformation myPose;
 	//myPose.setTranslation(EcVector(ee_pose[0],ee_pose[1],ee_pose[2]));
 	EcCoordinateSystemTransformation desiredPose;
@@ -276,8 +337,29 @@ EcBoolean EcCytonCommands::MovementExample( vector<double> ee_pose , int ee_set)
 	else if ( ee_set = POINT_EE_SET){
 		setEndEffectorSet(POINT_EE_SET);
 	}
-	boost::mutex::scoped_lock lock(myMutex);
+	boost::mutex::scoped_lock lock(poseLock);
 	myPose = desiredPose;
+
+	return retVal;
+}
+
+EcBoolean EcCytonCommands::SnapExample( )const{
+
+	EcBoolean retVal=EcTrue;
+
+
+	setEndEffectorSet(FRAME_EE_SET);
+
+	EcManipulatorEndEffectorPlacement actualEEPlacement;
+	getActualPlacement(actualEEPlacement);
+	EcCoordinateSystemTransformation ecPose = actualEEPlacement.offsetTransformations()[0].coordSysXForm();
+	EcVector translation = ecPose.translation();
+	EcOrientation orientation = ecPose.orientation();
+
+	boost::mutex::scoped_lock lock(poseLock);
+
+	myPose.setTranslation(translation);
+	myPose.setOrientation(orientation);
 
 	return retVal;
 }
@@ -288,6 +370,9 @@ EcBoolean EcCytonCommands::MoveJointsExample
    const EcReal angletolerance
    )const
 {
+	if(!getExecuting()){
+		return EcFalse;
+	}
    EcBoolean retVal=EcTrue;
    setEndEffectorSet(JOINT_CONTROL_EE_SET);
    EcSLEEPMS(500);
@@ -325,7 +410,7 @@ EcBoolean EcCytonCommands::MoveJointsExample
    EcBooleanVector jointAchieved;
    jointAchieved.resize(size);
    EcBoolean positionAchieved = EcFalse;
-   while(!positionAchieved)
+   while(!positionAchieved && getExecuting())
    {
       EcPrint(Debug) << "Moving ";
       getJointValues(currentJoints);
@@ -371,6 +456,9 @@ EcBoolean EcCytonCommands::pointMovementExample
    )const
 {
 
+	if(!getExecuting()){
+		return EcFalse;
+	}
    std::cout<<"Desired pose:  x: "<<pose.translation().x()<< " y: " <<pose.translation().y()<<" z: " <<pose.translation().z()<<std::endl;
 
    setEndEffectorSet(POINT_EE_SET); // point end effector set index
@@ -385,7 +473,7 @@ EcBoolean EcCytonCommands::pointMovementExample
    setDesiredPlacement(desiredPlacement,0,0);
 
    EcBoolean achieved = EcFalse;
-   while(!achieved)
+   while(!achieved && getExecuting())
    {
       EcPrint(Debug) << "Moving "<<std::endl;
       getActualPlacement(actualEEPlacement);
@@ -402,10 +490,13 @@ EcBoolean EcCytonCommands::pointMovementExample
          std::cout<<"Achieved Pose"<<std::endl;
          achieved = EcTrue;
       }
+      else{
+    	  //
+      }
    }
    return achieved;
 }
-
+EcBoolean _executing = EcTrue;
 //-----------------------------Frame Movement Example-------------------------
 EcBoolean EcCytonCommands::frameMovementExample
    (
@@ -413,7 +504,10 @@ EcBoolean EcCytonCommands::frameMovementExample
    )const
 {
 
-   std::cout<<"Desired pose:  x: "<<pose.translation().x()<< " y: " <<pose.translation().y()<<" z: " <<pose.translation().z()<<std::endl;
+	if(!getExecuting()){
+		return EcFalse;
+	}
+   //std::cout<<"Desired pose:  x: "<<pose.translation().x()<< " y: " <<pose.translation().y()<<" z: " <<pose.translation().z()<<std::endl;
 
    setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
    EcEndEffectorPlacement desiredPlacement(pose);
@@ -427,7 +521,9 @@ EcBoolean EcCytonCommands::frameMovementExample
    setDesiredPlacement(desiredPlacement,0,0);
 
    EcBoolean achieved = EcFalse;
-   while(!achieved)
+
+
+   while(!achieved && getExecuting())
    {
       EcPrint(Debug) << "Moving "<<std::endl;
       getActualPlacement(actualEEPlacement);
@@ -446,11 +542,21 @@ EcBoolean EcCytonCommands::frameMovementExample
       }
       ////added this:
       else{
-    	  std::cout<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
+    	  //std::cout<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
       }
       ////
    }
+
    return achieved;
+}
+bool _execute = false;
+EcBoolean EcCytonCommands::getExecuting()const{
+	boost::mutex::scoped_lock lock(executeLock);
+	return _execute;
+}
+void EcCytonCommands::setExecuting(bool exec)const{
+	boost::mutex::scoped_lock lock(executeLock);
+	_execute = exec;
 }
 
 //-----------------------------move gripper test-------------------------
@@ -459,11 +565,14 @@ EcBoolean EcCytonCommands::moveGripperExample
    const EcReal gripperPos
    )const
 {
+	if(!getExecuting()){
+		return EcFalse;
+	}
    EcBoolean retVal=EcTrue;
 
-	boost::mutex::scoped_lock lock(myMutex);
-	myGripper = gripperPos;
-/*
+	//boost::mutex::scoped_lock lock(poseLock);
+	//myGripper = gripperPos;
+
    EcManipulatorEndEffectorPlacement actualEEPlacement,desiredEEPlacement;
 
    setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
@@ -487,7 +596,7 @@ EcBoolean EcCytonCommands::moveGripperExample
    //set the desired placement
    setDesiredPlacement(desiredEEPlacement,0);
    std::cout<<"Moving Gripper to: "<<gripperPos<<std::endl;
-   */
+
    return retVal;
 }
 

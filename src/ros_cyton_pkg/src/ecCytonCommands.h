@@ -158,15 +158,34 @@ public:
 	   vector<double> ee_pose,
 	   const int ee_set
    )const;
+   /// snap to robot position
+   virtual EcBoolean SnapExample
+   (
+   )const;
+   /// move the robot to home position(zero joint angles for all the joints)
+   virtual EcBoolean ModifyMovementExample
+   (
+	   vector<double> ee_rate,
+	   const int ee_set
+   )const;
 
    /// move the robot to home position(zero joint angles for all the joints)
-   virtual bool move
+   virtual EcCoordinateSystemTransformation move
    (
    )const;
    /// move the robot to home position(zero joint angles for all the joints)
    virtual void initialize
    (
    );
+   ///
+   virtual EcBoolean getExecuting
+   (
+   )const;
+   //
+   virtual void setExecuting
+   (
+		 EcBoolean exec
+   )const;
 
 
 protected:
