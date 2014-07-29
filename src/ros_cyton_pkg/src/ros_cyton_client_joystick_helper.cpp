@@ -28,20 +28,19 @@ ros::Publisher ee_type_pub;
 ros::Publisher ee_pos_pub;
 ros::Publisher ee_rate_pub;
 ros::Publisher joint_val_pub;
-ros::Publisher gripper_val_pub;
 ros::Publisher execute_pub;
 
 #define DO_NOT_MODIFY 1001
 int JOINT_WRIST = 1;
 
-std::vector<double> ee_pose(6);
-std::vector<double> ee_rates(6);
+std::vector<double> ee_rates(7);//x,y,z,roll,pitch,yaw,gripper
+ros::Publisher gripper_val_pub;
 std::vector<double> joint_values(7);
 std::vector<double> joint_rates(7);
 
 const double GRIPPER_MIN = 0.0015;
 const double GRIPPER_MAX = 0.015;
-const float GRIPPER_GAIN = 0.001;
+const float GRIPPER_GAIN = 0.0001;
 float DEADZONE  = 0.125;
 //somewhere in the middle?{ 0.00625 , 0.008, 0.015 };
 
@@ -51,10 +50,10 @@ float DEADZONE  = 0.125;
 ///Function will adjust the gripper value
 ///@param[in] value (double) Gripper value
 ///@return[out] status(bool) Status of the function
-float AXIS_GAIN[] = {0.001 , 0.001 , 0.001 , 0.001 , 0.001 , 0.001 , 0.001 , 0.001 };
+float AXIS_GAIN[] = {0.0001 , 0.0001 , 0.0001 , 0.001 , 0.001 , 0.001 , 0.001 , 0.001 };
 
 //	AXIS NUMBER:	{0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 };
-int axis_map[] =	{0 , 1 , 2 , 5 , 4 , 4 , 3 , 5 };//6 does not exist
+int axis_map[] =	{1 , 0 , 4 , 2 , 5 , 5 , 3 , 3 };//6 does not exist
 
 
 ///Function will send end effector pose, name of end effector to ros_cyton_server
@@ -108,26 +107,55 @@ bool Send_EE_Pose(std::string end_effector,double ee_pose_array[])
 
 	return true;
 }
+bool Change_EE_Type(std::string end_effector)
+
+{
+
+	std_msgs::String ee_type_msg;
+
+	if(end_effector == "point_end_effector")
+	{
+
+		std::stringstream ss1;
+		ss1 << "point_end_effector";
+		ee_type_msg.data = ss1.str();
+
+	}
+
+	else if(end_effector == "frame_end_effector")
+	{
+
+		std::stringstream ss1;
+		ss1 << "frame_end_effector";
+		ee_type_msg.data = ss1.str();
+	}
+
+	///Sending messages
+	ee_type_pub.publish(ee_type_msg);
+
+
+
+	return true;
+}
 
 
 ///Function will send end effector pose, name of end effector to ros_cyton_server
 ///@param[in] end_effector (String) Name of endeffector
 ///@parm[in] ee_pose_array (double[]) end effector pose array(x,y,z,roll,pitch,yaw)
 ///@return[out] status Return the status of function
-bool Modify_EE_Pose(std::string end_effector,std::vector<double> _pose)
+bool Modify_EE_Pose(std::string end_effector,std::vector<double> ee_pose)
 
 {
 
 	ROS_INFO("Moving to < %.3f , %.3f , %.3f >",ee_pose[0],ee_pose[1],ee_pose[2]);
 
 	std_msgs::Float64MultiArray pose;
-	pose.data=_pose;
+	pose.data=ee_pose;
 	ee_pos_pub.publish(pose);
 
 
 	return true;
 }
-
 
 
 
@@ -159,6 +187,21 @@ bool Send_Joint_Pose(double joint_pose_array[])
 	mode_pub.publish(mode_msg);
 	joint_val_pub.publish(joint_pose);
 	execute_pub.publish(execute);	
+
+	return true;
+}
+
+///Function will send joint values to ros_cyton_server
+///@param[in] joint_values (double []) Joint values except gripper
+///@return[out] status Return the status of function
+bool Send_Command(std::string command)
+{
+
+	std_msgs::String execute;
+	execute.data = command;
+
+	///Sending messages
+	execute_pub.publish(execute);
 
 	return true;
 }
@@ -226,55 +269,60 @@ float map(float x, float in_min, float in_max, float out_min, float out_max)
 }
 
 
-bool handle_button( unsigned button, int state){
-	bool handled = false;
-	switch(button){
-	case 0://A button
-		if(state > 0)
-		{
-			ROS_INFO("OPENNING GRIPPER");//open gripper
-			//handled = Modify_Gripper_Value(0.001);
-		}
-		break;
-	case 1://B button
-		if(state > 0){
-			ROS_INFO("CLOSING GRIPPER");//open gripper
-			//handled = Modify_Gripper_Value(-0.001);
-		}
-		break;
-	case 2://B button
-		if(state > 0){
-			JOINT_WRIST--;
-			if(JOINT_WRIST < 0) JOINT_WRIST = 0;
-			ROS_INFO("Switching control to Joint_%d",JOINT_WRIST);//open gripper
-		}
-		break;
-	case 3://B button
-		if(state > 0){
-			JOINT_WRIST++;
-			if(JOINT_WRIST > 7) JOINT_WRIST = 7;
-			ROS_INFO("Switching control to Joint_%d",JOINT_WRIST);//open gripper
-		}
-		break;
-	}
-	return handled;
-}
+bool rate_sent = false;
 bool Send_EE_Rates(){
-
-	for(int axis = 0; axis < ee_rates.size(); axis++){
-		ee_pose[axis_map[axis]] += ee_rates[axis_map[axis]];//^^
+	bool send = false;
+	for ( int i = 0; i < 7; i++){
+		if (ee_rates[i] != 0.0 ){
+			send = true;
+			break;
+		}
 	}
-	std_msgs::Float64MultiArray msg;
-	msg.data=ee_rates;
-	ee_rate_pub.publish(msg);
-	msg.data=ee_pose;
-	ee_rate_pub.publish(msg);
+	if (send || !rate_sent){
+		rate_sent = true;
+		ROS_INFO("Sending EE_RATES: \n\t< %.4f ,  %.4f ,  %.4f ,  %.4f ,  %.4f ,  %.4f >\n\tMoving Gripper: <%.4f>",ee_rates[0],ee_rates[1],ee_rates[2],ee_rates[3],ee_rates[4],ee_rates[5],ee_rates[6]);
+		std_msgs::Float64MultiArray msg;
+		msg.data=ee_rates;
+		ee_rate_pub.publish(msg);
+	}
 
+	return send;
+}
+bool handle_buttons( std::vector<int> buttons){
+	if(buttons[0] > 0){//A button
+		Send_Command("snap");
+	}
+	if(buttons[1] > 0){//B button
+		Send_Command("stop");
+	}
+	if(buttons[2] > 0){//X button
+		Change_EE_Type("frame_end_effector");
+		ROS_INFO("Switching control to FRAME_EE_MODE");//open gripper
+	}
+	if(buttons[3] > 0){//Y button
+		Change_EE_Type("point_end_effector");
+		ROS_INFO("Switching control to POINT_EE_MODE");//open gripper
+	}
+	if(buttons[4] > 0){//LB button
+		ROS_INFO("OPENNING GRIPPER");//open gripper
+		ee_rates[6] = GRIPPER_GAIN;
+		rate_sent = false;
+	}
+	else if(buttons[5] > 0){//RB button
+		ROS_INFO("CLOSING GRIPPER");//open gripper
+		ee_rates[6] = -GRIPPER_GAIN;
+		rate_sent = false;
+	}
+	else
+		ee_rates[6] = 0;
+	if(buttons[6] > 0){//back button
+		Send_Command("test");
+		//
+	}
 	return true;
 }
+
 void handle_joystick( const sensor_msgs::Joy::ConstPtr& msg){
-	bool moved = false;
-	ROS_INFO("Current pose is: < %.3f , %.3f , %.3f >",ee_pose[0],ee_pose[1],ee_pose[2]);
 	/*ee_rates[0] =
 			for(unsigned i = 0; i < msg->axes.size(); i++){
 				if( handle_axis(i,msg->axes[i]) ){
@@ -282,9 +330,8 @@ void handle_joystick( const sensor_msgs::Joy::ConstPtr& msg){
 				}
 			}*/
 	for(unsigned i = 0; i < msg->axes.size()-1; i++){//first 4 axis, and not the last
-		ROS_INFO("Modifying axis %d.",i);
+		//ROS_INFO("Modifying axis %d.",i);
 		if( fabs(msg->axes[i]) > DEADZONE ){
-			moved = true;//ROS_INFO("Axis %d is now at position: %f",i,msg->axes[i]);//
 			ee_rates[axis_map[i]] = ( AXIS_GAIN[axis_map[i]] * msg->axes[i] );
 
 		}
@@ -297,16 +344,13 @@ void handle_joystick( const sensor_msgs::Joy::ConstPtr& msg){
 	}
 	float value = map(msg->axes[4] , 1.0 , -1.0 , 0.0 , -1.0 );
 		  value += map(msg->axes[5] , 1.0 , -1.0 , 0.0 , 1.0 );
-	ee_rates[4] = ( AXIS_GAIN[4] * value );
-
-	if (moved){//if a joystick was moved
+	ee_rates[5] = ( AXIS_GAIN[4] * value );
+	/*if (moved){//if a joystick was moved
 		ROS_INFO("Modifying pose by: < %.3f , %.3f , %.3f >",msg->axes[0],msg->axes[1],msg->axes[2]);
 		Modify_EE_Pose("point_end_effector",ee_pose);
-	}
-	for(unsigned i = 0; i < msg->buttons.size(); i++){
-		handle_button(i,msg->buttons[i]);
-		//ROS_INFO("Button %d is now: %d",i,msg->buttons[i]);}
-	}
+	}*/
+	handle_buttons(msg->buttons);
+	rate_sent = false;
 }
 void handle_command( const std_msgs::Int32::ConstPtr& msg){
 	int command = msg->data;
@@ -357,7 +401,7 @@ void handle_joint_feedback( const std_msgs::Float64MultiArray::ConstPtr& msg){
 }
 void handle_pose_feedback( const std_msgs::Float64MultiArray::ConstPtr& msg){
 	//ROS_INFO("Got Pose feedback.");//
-	ee_pose = msg->data;
+	//ee_pose = msg->data;
 }
 
 
@@ -407,7 +451,7 @@ int main(int argc, char **argv)
 	mode_pub = n.advertise<std_msgs::String>("mode", 1);
 	ee_type_pub = n.advertise<std_msgs::String>("end_effector_type", 1);
 	ee_pos_pub = n.advertise<std_msgs::Float64MultiArray>("ee_pose", 1);
-	ee_rate_pub = n.advertise<std_msgs::Float64MultiArray>("ee_rates", 1);
+	ee_rate_pub = n.advertise<std_msgs::Float64MultiArray>("ee_rate", 1);
 	joint_val_pub = n.advertise<std_msgs::Float64MultiArray>("joint_array", 1);
 	gripper_val_pub = n.advertise<std_msgs::Float64>("gripper_value", 1);
 	execute_pub = n.advertise<std_msgs::String>("execute", 1);
@@ -421,9 +465,8 @@ int main(int argc, char **argv)
 
 
 
-
 	//ros::spin();
-	ros::Rate loop_rate(30);
+	ros::Rate loop_rate(300);
 
 	while (ros::ok())
 	{

@@ -36,6 +36,7 @@ using namespace std;
 bool moved = true;
 ros::Publisher joint_feedback_pub;
 ros::Publisher pose_feedback_pub;
+ros::Publisher pose_offset_pub;
 #define JOINT_MODIFY 1000//a ridiculous threshold to determine if this value is to be used
 //------------------------------------------------------------------------------
 #define RC_CHECK(fun) do \
@@ -58,7 +59,7 @@ EcCytonCommands cytonCommands;
 
 ///Global variables for mode ,endeffector, ee_pose,joint_values,gripper value and cyton version
 std::string mode;
-std::string end_effector_type;
+std::string end_effector_type = "point_end_effector";
 std::vector<double> ee_pose(6);
 std::vector<double> joint_values(7);
 double gripper_value=0;
@@ -98,6 +99,28 @@ EcRealVector Get_Joints()
 
 }
 
+EcRealVector Send_Blank_Message()
+
+{
+
+	//ROS_INFO("Get_Joints");
+
+	//EcRealVector jointposition = cytonCommands.GetJointsExample();//Joint Get Example
+
+	std_msgs::Float64MultiArray joint_pose;
+
+	//joint_pose.data = jointposition;
+	joint_feedback_pub.publish(joint_pose);
+	return joint_values;//jointposition;
+
+}
+bool Send_Offset(double distance){
+
+	std_msgs::Float64 msg;
+	msg.data = distance;
+	pose_offset_pub.publish(msg);
+}
+
 EcRealVector Get_Pose()
 
 {
@@ -114,6 +137,27 @@ EcRealVector Get_Pose()
 
 }
 
+
+
+bool Modify_EE_Pose(vector<double> ee_rate)
+
+{
+
+	ROS_INFO("Modifying EE Pose...");
+	moved = true;
+	if(end_effector_type == "point_end_effector")
+		{
+			RC_CHECK(cytonCommands.ModifyMovementExample(ee_rate,0));
+		}
+	else if(end_effector_type == "frame_end_effector")
+	{
+		//RC_CHECK(cytonCommands.frameMovementExample(ee_pose));
+		RC_CHECK(cytonCommands.ModifyMovementExample(ee_rate,1));
+	}
+	else{
+		ROS_WARN("Unknown end-effector-type. No motion.");
+	}
+}
 
 
 //----------------------------------------------------------------------
@@ -204,8 +248,18 @@ void mode_Callback(const std_msgs::String::ConstPtr& msg)
 ///Callback for setting endeffector
 void ee_Callback(const std_msgs::String::ConstPtr& msg)
 {
-
-	end_effector_type = msg->data; 
+	std::string newType = msg->data;
+	if( newType != end_effector_type){
+		ROS_INFO("CHANGING End_Effector: [%s]", newType.c_str());
+		end_effector_type = newType;
+		if( newType == "frame_end_effector"){
+			ROS_INFO("Snapping to Robot Position...");
+			cytonCommands.SnapExample();
+			//EcRealVector pose = cytonCommands.GetPoseExample();//Joint Get Example
+			//ROS_INFO("Current orientation: < %.4f , %.4f , %.4f >",pose[3],pose[4],pose[5]);
+			//Send_EE_Pose(pose);//update orientation
+		}
+	}
 	ROS_INFO("End_Effector: [%s]", end_effector_type.c_str()); 
 
 }
@@ -215,9 +269,9 @@ void ee_Callback(const std_msgs::String::ConstPtr& msg)
 void ee_pose_Callback(const std_msgs::Float64MultiArray::ConstPtr& msg)
 {
 
-	ee_pose.clear();
-	ee_pose = msg->data;
-	Send_EE_Pose(ee_pose);
+	//ee_pose.clear();
+	//ee_pose = msg->data;
+	Send_EE_Pose(msg->data);
 
 	ROS_INFO("X: [%f]", ee_pose[0]);
 	ROS_INFO("Y: [%f]", ee_pose[1]);
@@ -225,6 +279,21 @@ void ee_pose_Callback(const std_msgs::Float64MultiArray::ConstPtr& msg)
 	ROS_INFO("ROLL: [%f]", ee_pose[3]);
 	ROS_INFO("PITCH: [%f]", ee_pose[4]);
 	ROS_INFO("YAW: [%f]", ee_pose[5]);
+
+}
+///Callback for setting endeffector pose
+void ee_rate_Callback(const std_msgs::Float64MultiArray::ConstPtr& msg)
+{
+
+	Modify_EE_Pose(msg->data);
+/*
+	ROS_INFO("X: [%f]", ee_pose[0]);
+	ROS_INFO("Y: [%f]", ee_pose[1]);
+	ROS_INFO("Z: [%f]", ee_pose[2]);
+	ROS_INFO("ROLL: [%f]", ee_pose[3]);
+	ROS_INFO("PITCH: [%f]", ee_pose[4]);
+	ROS_INFO("YAW: [%f]", ee_pose[5]);
+	*/
 
 }
 
@@ -254,11 +323,13 @@ void joint_value_Callback(const std_msgs::Float64MultiArray::ConstPtr& msg)
 
 }
 
+
 ///Callback for setting the gripper value
 void gripper_Callback(const std_msgs::Float64::ConstPtr& msg)
 {
 
 	gripper_value = msg->data;
+
 	ROS_INFO("Gripper value: [%f]", gripper_value);
 	moved = true;
 	cytonCommands.moveGripperExample(gripper_value);
@@ -286,10 +357,20 @@ void execute_Callback(const std_msgs::String::ConstPtr& msg)
 			Send_Gripper_Value(gripper_value);
 		}
 	}
-
+	else if(msg->data == "snap")
+	{
+		ROS_INFO("Snapping to End Effector");
+		cytonCommands.SnapExample();
+		cytonCommands.setExecuting(EcTrue);
+	}
 	else if(msg->data == "no")
 	{
 		ROS_INFO("Skipping Execution");
+	}
+	else if(msg->data == "stop")
+	{
+		ROS_INFO("Attempting to Stop Execution...");
+		cytonCommands.setExecuting(EcFalse);
 	}
 	else if(msg->data == "test")
 	{
@@ -301,7 +382,9 @@ void execute_Callback(const std_msgs::String::ConstPtr& msg)
 		double pick = stack + blockHeight*(blocks-1);
 		for (int i = 0; i < blocks; ++i) {
 			ROS_INFO("Picking from z=%f and stacking at z=%f",pick,stack);
-			cytonCommands.pickAndStackExample("300",pick,stack);
+			if (cytonCommands.getExecuting()){
+				cytonCommands.pickAndStackExample("300",pick,stack);
+			}
 			pick-=blockHeight;
 			stack+=blockHeight;
 		}
@@ -309,7 +392,10 @@ void execute_Callback(const std_msgs::String::ConstPtr& msg)
 			pick+=blockHeight;
 			stack-=blockHeight;
 			ROS_INFO("Picking from z=%f and stacking at z=%f",pick,stack);
-			cytonCommands.pickAndUnStackExample("300",pick,stack);
+
+			if (cytonCommands.getExecuting()){
+				cytonCommands.pickAndUnStackExample("300",pick,stack);
+			}
 
 		}
 
@@ -399,25 +485,38 @@ int main(int argc, char **argv)
 	//publishers list
 	joint_feedback_pub = n.advertise<std_msgs::Float64MultiArray>("joint_array/feedback", 1);
 	pose_feedback_pub = n.advertise<std_msgs::Float64MultiArray>("ee_pose/feedback", 1);
+	pose_offset_pub = n.advertise<std_msgs::Float64>("ee_pose/offset", 1);
 
 	///Subscriber List
 	ros::Subscriber mode_ = n.subscribe("mode", 100, mode_Callback);
 	ros::Subscriber end_effector_type_ = n.subscribe("end_effector_type", 100, ee_Callback);
 	ros::Subscriber ee_pose_ = n.subscribe("ee_pose", 100, ee_pose_Callback);
+	ros::Subscriber ee_rate_ = n.subscribe("ee_rate", 100, ee_rate_Callback);
 	ros::Subscriber joint_values_ = n.subscribe("joint_array", 10, joint_value_Callback);
 	ros::Subscriber gripper_ = n.subscribe("gripper_value", 10, gripper_Callback);
-	ros::Subscriber execute_ = n.subscribe("execute", 10, execute_Callback);
+	ros::Subscriber execute_ = n.subscribe("execute", 1, execute_Callback);
 
 
 	//ros::spin();
 
-	  ros::Rate loop_rate(30);
-	  bool there = !cytonCommands.move();
+	ros::Rate loop_rate(500);
+	bool there = false;
+
+	EcCoordinateSystemTransformation offset, zero;
+	zero.setTranslation(EcVector(0,0,0));
+	offset = cytonCommands.move();
+
+
 	  while (ros::ok())
 	  {
-		  if(moved)//moved
+		  if(true)//if(moved)
 		  {
-			  bool now = cytonCommands.move();
+			  	offset = cytonCommands.move();
+			  	bool now = false;
+				if(offset.approxEq(zero,.00001))
+				{
+				 now = true;
+				}
 			  //ROS_INFO("&*&*&position. %s %s",there?"There":"NotThere",now?"Now":"NotNow");
 			  if ( there !=  now ){
 				  if (now)
@@ -432,8 +531,10 @@ int main(int argc, char **argv)
 				  there = now;
 			  }
 		  }
-		  Get_Joints();
-		  Get_Pose();
+		  Send_Offset(offset.translation().mag());
+		  Send_Blank_Message();
+		  //Get_Joints();
+		  //Get_Pose();
 		  ros::spinOnce();
 		  loop_rate.sleep();
 	  }
