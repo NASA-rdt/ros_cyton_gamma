@@ -18,6 +18,7 @@
 #include <vector>
 
 
+
 ///Global declaration of publishers
 ros::Publisher mode_pub;
 ros::Publisher ee_type_pub;
@@ -44,7 +45,6 @@ bool Send_EE_Pose(std::string end_effector,double ee_pose_array[])
     	ee_pos.insert(ee_pos.begin(),ee_pose_array,ee_pose_array+6);	
         if(end_effector == "point_end_effector")
 	{
-
     		std::stringstream ss1;
     		ss1 << "point_end_effector";
     		ee_type_msg.data = ss1.str();
@@ -74,6 +74,7 @@ bool Send_EE_Pose(std::string end_effector,double ee_pose_array[])
 	ee_type_pub.publish(ee_type_msg);
 	ee_pos_pub.publish(ee_pose);
 	execute_pub.publish(execute);	
+	ROS_INFO("huh?");
 
 
 	return true;
@@ -194,12 +195,27 @@ int main(int argc, char **argv)
 
 
 
-    double val_array1[6]={0.00501075,0.0586387,0.61778,-1.15601,-0.00276855,-3.13846};
+	    double val_array1[6]={0.00501075,0.0586387,0.61778,-1.15601,-0.00276855,-3.13846};
+	    double val_array2[6]={0,0.2,0.15,	0,0,0};
+	    double val_array3[6]={0,0.2,0.15,	0,0,1.57};
 
 
-    Send_EE_Pose("frame_end_effector",val_array1);
-    ros::spinOnce();
-    loop_rate.sleep();
+	    //Send_EE_Pose("point_end_effector",val_array1);
+	    ROS_INFO("HERE_1 !");
+	    //ros::Duration(1).sleep();
+	    //Send_Gripper_Value(0.0018);//
+	    //ros::Duration(5).sleep();
+	    Send_EE_Pose("frame_end_effector",val_array2);
+	    ROS_INFO("HERE_2 !");
+	    //ros::Duration(1).sleep();
+	    //Send_Gripper_Value(0.010);//
+	    ros::Duration(3).sleep();
+	    Send_EE_Pose("frame_end_effector",val_array3);
+	    ROS_INFO("HERE_3 !");
+	    ros::Duration(1).sleep();
+
+	    ros::spinOnce();
+    //loop_rate.sleep();
 
  
     

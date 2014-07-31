@@ -10,6 +10,8 @@
 //------------------------------------------------------------------------------
 #include <foundCore/ecTypes.h>
 #include <foundCommon/ecCoordSysXForm.h>
+#include <vector>
+using namespace std;
 
 /// This class uses the remote commands API to communicate with the 
 //  ActinViewer/CytonViewer or ActinRT with the remoteCommandServerPlugin loaded.
@@ -70,6 +72,9 @@ public:
    virtual EcRealVector GetJointsExample
       (
       )const;
+   virtual EcRealVector GetPoseExample
+      (
+      )const;
 
 
    /// set the control descriptor for the simulation file on the server
@@ -113,6 +118,25 @@ public:
       (
       const EcString& cytonModel
       )const;
+   ///sample sequence of remote command actions to pick up and place an object
+   // @param[in] cytonModel (EcString&) cyton version (300, 300PX, 1500, 1500R2)
+   /// @return         (EcBoolean) flag which returns the status of command
+   virtual EcBoolean pickAndStackExample
+      (
+      const EcString& cytonModel,
+      double pick,
+      double stack
+      )const;
+
+   ///sample sequence of remote command actions to pick up and place an object
+   // @param[in] cytonModel (EcString&) cyton version (300, 300PX, 1500, 1500R2)
+   /// @return         (EcBoolean) flag which returns the status of command
+   virtual EcBoolean pickAndUnStackExample
+      (
+      const EcString& cytonModel,
+      double pick,
+      double stack
+      )const;
 
 
    /// enable hardware test
@@ -127,6 +151,41 @@ public:
    virtual EcBoolean resetToHome
        (
        )const;
+
+   /// move the robot to home position(zero joint angles for all the joints)
+   virtual EcBoolean MovementExample
+   (
+	   vector<double> ee_pose,
+	   const int ee_set
+   )const;
+   /// snap to robot position
+   virtual EcBoolean SnapExample
+   (
+   )const;
+   /// move the robot to home position(zero joint angles for all the joints)
+   virtual EcBoolean ModifyMovementExample
+   (
+	   vector<double> ee_rate,
+	   const int ee_set
+   )const;
+
+   /// move the robot to home position(zero joint angles for all the joints)
+   virtual EcCoordinateSystemTransformation move
+   (
+   )const;
+   /// move the robot to home position(zero joint angles for all the joints)
+   virtual void initialize
+   (
+   );
+   ///
+   virtual EcBoolean getExecuting
+   (
+   )const;
+   //
+   virtual void setExecuting
+   (
+		 EcBoolean exec
+   )const;
 
 
 protected:
