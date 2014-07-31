@@ -169,14 +169,13 @@ public:
 	   const int ee_set
    )const;
 
-   /// move the robot to home position(zero joint angles for all the joints)
+   /// move the robot to saved position()
    virtual EcCoordinateSystemTransformation move
    (
    )const;
    /// move the robot to home position(zero joint angles for all the joints)
    virtual void initialize
-   (
-   );
+   (   );
    ///
    virtual EcBoolean getExecuting
    (
@@ -186,6 +185,14 @@ public:
    (
 		 EcBoolean exec
    )const;
+   virtual EcBoolean pointElbowMovementExample
+   (
+		const int joint,
+		const EcVector tran
+   )const;
+   EcRealVector GetDesiredPose
+      (
+      )const;
 
 
 protected:

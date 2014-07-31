@@ -289,35 +289,54 @@ bool Send_EE_Rates(){
 	return send;
 }
 bool handle_buttons( std::vector<int> buttons){
-	if(buttons[0] > 0){//A button
-		Send_Command("snap");
-	}
-	if(buttons[1] > 0){//B button
-		Send_Command("stop");
-	}
-	if(buttons[2] > 0){//X button
-		Change_EE_Type("frame_end_effector");
-		ROS_INFO("Switching control to FRAME_EE_MODE");//open gripper
-	}
-	if(buttons[3] > 0){//Y button
-		Change_EE_Type("point_end_effector");
-		ROS_INFO("Switching control to POINT_EE_MODE");//open gripper
-	}
-	if(buttons[4] > 0){//LB button
-		ROS_INFO("OPENNING GRIPPER");//open gripper
-		ee_rates[6] = GRIPPER_GAIN;
-		rate_sent = false;
-	}
-	else if(buttons[5] > 0){//RB button
-		ROS_INFO("CLOSING GRIPPER");//open gripper
-		ee_rates[6] = -GRIPPER_GAIN;
-		rate_sent = false;
-	}
-	else
-		ee_rates[6] = 0;
-	if(buttons[6] > 0){//back button
-		Send_Command("test");
+	if(buttons[6] > 0 ){//back button
+		if( buttons[7] > 0){//AND start
+			Send_Command("test");
+		}
+		if( buttons[0] > 0){//AND A
+			Send_Command("getPose");
+		}
+		if( buttons[3] > 0){//AND Y
+			ROS_INFO("Moving to next saved position...");
+			Send_Command("nextPose");
+		}
 		//
+	}
+	else{//not holding back button
+		if(buttons[0] > 0){//A button
+			Send_Command("snap");
+		}
+		if(buttons[1] > 0){//B button
+			Send_Command("stop");
+		}
+		if(buttons[2] > 0){//X button
+			Change_EE_Type("frame_end_effector");
+			ROS_INFO("Switching control to FRAME_EE_MODE");//open gripper
+		}
+		if(buttons[3] > 0){//Y button
+			Change_EE_Type("point_end_effector");
+			ROS_INFO("Switching control to POINT_EE_MODE");//open gripper
+		}
+		if(buttons[4] > 0){//LB button
+			ROS_INFO("OPENNING GRIPPER");//open gripper
+			ee_rates[6] = GRIPPER_GAIN;
+			rate_sent = false;
+		}
+		else if(buttons[5] > 0){//RB button
+			ROS_INFO("CLOSING GRIPPER");//open gripper
+			ee_rates[6] = -GRIPPER_GAIN;
+			rate_sent = false;
+		}
+		else
+			ee_rates[6] = 0;
+		if(buttons[8] > 0){
+			ROS_INFO("Resetting to Home Position...");
+			Send_Command("goHome");
+		}
+		if(buttons[9] > 0 && buttons[10] > 0){
+			ROS_INFO("Clearing Saved Positions...");
+			Send_Command("clearPose");
+		}
 	}
 	return true;
 }

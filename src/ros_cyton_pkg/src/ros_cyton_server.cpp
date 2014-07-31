@@ -37,6 +37,7 @@ bool moved = true;
 ros::Publisher joint_feedback_pub;
 ros::Publisher pose_feedback_pub;
 ros::Publisher pose_offset_pub;
+ros::Publisher execute_feedback_pub;
 #define JOINT_MODIFY 1000//a ridiculous threshold to determine if this value is to be used
 //------------------------------------------------------------------------------
 #define RC_CHECK(fun) do \
@@ -372,6 +373,21 @@ void execute_Callback(const std_msgs::String::ConstPtr& msg)
 		ROS_INFO("Attempting to Stop Execution...");
 		cytonCommands.setExecuting(EcFalse);
 	}
+	else if(msg->data == "getPose")
+	{
+		Get_Pose();
+	}
+	else if(msg->data == "getJoints")
+	{
+		Get_Joints();
+	}
+	else if(msg->data == "goHome")
+	{
+		double myD[] = {0.32258503577996395, -0.016935348630483515, 0.30113028299518263, -2.867941662129556, -1.3665262460668746, -4.435223812719744};
+		std::vector<double> pose(myD,myD+sizeof(myD)/sizeof(double));
+		Send_EE_Pose(pose);
+		//cytonCommands.SnapExample();
+	}
 	else if(msg->data == "test")
 	{
 		ROS_INFO("Test: pick and place demo!");
@@ -381,7 +397,7 @@ void execute_Callback(const std_msgs::String::ConstPtr& msg)
 		double blockHeight = 0.02;
 		double pick = stack + blockHeight*(blocks-1);
 		for (int i = 0; i < blocks; ++i) {
-			ROS_INFO("Picking from z=%f and stacking at z=%f",pick,stack);
+			//ROS_INFO("Picking from z=%f and stacking at z=%f",pick,stack);
 			if (cytonCommands.getExecuting()){
 				cytonCommands.pickAndStackExample("300",pick,stack);
 			}
@@ -391,7 +407,7 @@ void execute_Callback(const std_msgs::String::ConstPtr& msg)
 		for (int i = 0; i < blocks; ++i) {
 			pick+=blockHeight;
 			stack-=blockHeight;
-			ROS_INFO("Picking from z=%f and stacking at z=%f",pick,stack);
+			//ROS_INFO("Picking from z=%f and stacking at z=%f",pick,stack);
 
 			if (cytonCommands.getExecuting()){
 				cytonCommands.pickAndUnStackExample("300",pick,stack);
@@ -486,6 +502,7 @@ int main(int argc, char **argv)
 	joint_feedback_pub = n.advertise<std_msgs::Float64MultiArray>("joint_array/feedback", 1);
 	pose_feedback_pub = n.advertise<std_msgs::Float64MultiArray>("ee_pose/feedback", 1);
 	pose_offset_pub = n.advertise<std_msgs::Float64>("ee_pose/offset", 1);
+	execute_feedback_pub = n.advertise<std_msgs::String>("execute/feedback", 1);
 
 	///Subscriber List
 	ros::Subscriber mode_ = n.subscribe("mode", 100, mode_Callback);

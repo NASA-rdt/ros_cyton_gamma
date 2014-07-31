@@ -168,6 +168,7 @@ EcRealVector EcCytonCommands::GetPoseExample
    )const
 {
 
+	boost::mutex::scoped_lock lock(poseLock);
 	EcManipulatorEndEffectorPlacement actualEEPlacement;
 	getActualPlacement(actualEEPlacement);
 	EcCoordinateSystemTransformation ecPose = actualEEPlacement.offsetTransformations()[0].coordSysXForm();
@@ -183,6 +184,29 @@ EcRealVector EcCytonCommands::GetPoseExample
 //	pose[3] = orientation[0];
 //	pose[4] = orientation[1];
 //	pose[5] = orientation[2];
+
+	return pose;
+
+}
+
+EcRealVector EcCytonCommands::GetDesiredPose
+   (
+   )const
+{
+
+	EcRealVector pose(6);
+
+	boost::mutex::scoped_lock lock(poseLock);
+	//EcManipulatorEndEffectorPlacement actualEEPlacement;
+	//getActualPlacement(actualEEPlacement);
+	//EcCoordinateSystemTransformation ecPose = actualEEPlacement.offsetTransformations()[0].coordSysXForm();
+	EcVector translation = myPose.translation();
+	EcOrientation orientation = myPose.orientation();
+	pose[0] = translation.x();
+	pose[1] = translation.y();
+	pose[2] = translation.z();
+
+	orientation.get123Euler(pose[3],pose[4],pose[5]);
 
 	return pose;
 
@@ -319,6 +343,7 @@ EcBoolean EcCytonCommands::ModifyMovementExample( vector<double> ee_rate , int e
 
 	return retVal;
 }
+
 
 EcBoolean EcCytonCommands::MovementExample( vector<double> ee_pose , int ee_set)const{
 
@@ -496,6 +521,83 @@ EcBoolean EcCytonCommands::pointMovementExample
    }
    return achieved;
 }
+//an experimental function to move the elbow
+//this works, but is still under heavy testing.
+EcBoolean EcCytonCommands::pointElbowMovementExample
+   (
+		   const int this_joint_ee,
+		   const EcVector tran
+   )const
+{
+
+	   std::cout<<"in.";
+	if(!getExecuting()){
+		return EcFalse;
+	}
+	   std::cout<<"check.";
+   //std::cout<<"Desired pose:  x: "<<pose.translation().x()<< " y: " <<pose.translation().y()<<" z: " <<pose.translation().z()<<std::endl;
+
+   setEndEffectorSet(POINT_EE_SET); // point end effector set index
+   //EcEndEffectorPlacement desiredPlacement(pose);
+   EcManipulatorEndEffectorPlacement actualEEPlacement,desiredEEPlacement;
+   EcCoordinateSystemTransformation offset, zero, desiredCoord, actualCoord;
+   zero.setTranslation(EcVector(0,0,0));
+
+   std::cout<<"vectors.";
+
+   getActualPlacement(desiredEEPlacement);
+   EcEndEffectorPlacementVector state = desiredEEPlacement.offsetTransformations();
+   //state[3]=desiredPlacement;
+   //setDesiredPlacement(desiredPlacement,0,0);
+
+   std::cout<<"xforms.";
+
+   ///////////
+
+   //set the trnaslation of the driving gripper finger
+   EcCoordinateSystemTransformation elbowTrans = state[this_joint_ee].coordSysXForm();
+   EcVector current = elbowTrans.translation();
+   elbowTrans.setTranslation(tran+current);
+   EcEndEffectorPlacement elbowPlacement = state[this_joint_ee];
+   elbowPlacement.setCoordSysXForm(elbowTrans);
+   state[this_joint_ee]=elbowPlacement;
+
+   std::cout<<"placements.";
+   desiredEEPlacement.setOffsetTransformations(state);
+
+   //set the desired placement
+   setDesiredPlacement(desiredEEPlacement,0);
+
+   std::cout<<"exec."<<std::endl;
+   ////////
+
+   EcBoolean achieved = EcFalse;
+   while(!achieved && getExecuting())
+   {
+      EcPrint(Debug) << "Moving "<<std::endl;
+      getActualPlacement(actualEEPlacement);
+      actualCoord=actualEEPlacement.offsetTransformations()[3].coordSysXForm();
+      getDesiredPlacement(desiredEEPlacement);
+      desiredCoord=desiredEEPlacement.offsetTransformations()[3].coordSysXForm();
+
+      //get the transformation between the actual and desired
+      offset=(actualCoord.inverse()) * desiredCoord;
+      //EcPrint(Debug)
+
+      std::cout<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
+
+      if(offset.approxEq(zero,.00001))
+      {
+         std::cout<<"Achieved Pose"<<std::endl;
+         achieved = EcTrue;
+      }
+      else{
+    	  //
+      }
+   }
+   return achieved;
+}
+
 EcBoolean _executing = EcTrue;
 //-----------------------------Frame Movement Example-------------------------
 EcBoolean EcCytonCommands::frameMovementExample
@@ -533,7 +635,7 @@ EcBoolean EcCytonCommands::frameMovementExample
 
       //get the transformation between the actual and desired 
       offset=(actualCoord.inverse()) * desiredCoord;
-      EcPrint(Debug)<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
+      EcPrint(Debug)<<"Distance between actual and desired: "<<offset.translation().mag()<<std::endl;
 
       if(offset.approxEq(zero,.00001))
       {
@@ -1000,6 +1102,7 @@ EcBoolean EcCytonCommands::resetToHome
    (
    )const
 {
+
    EcRealVector joints;
    EcBoolean retVal = getJointValues(joints);
 

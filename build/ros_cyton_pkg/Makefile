@@ -203,6 +203,20 @@ ros_cyton_client_joystick_demo/fast:
 .PHONY : ros_cyton_client_joystick_demo/fast
 
 # Convenience name for target.
+ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/rule:
+	cd /home/nasa/catkin_ws/build && $(MAKE) -f CMakeFiles/Makefile2 ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/rule
+.PHONY : ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/rule
+
+# Convenience name for target.
+ros_cyton_client_joystick_helper: ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/rule
+.PHONY : ros_cyton_client_joystick_helper
+
+# fast build rule for target.
+ros_cyton_client_joystick_helper/fast:
+	cd /home/nasa/catkin_ws/build && $(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/build
+.PHONY : ros_cyton_client_joystick_helper/fast
+
+# Convenience name for target.
 ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir/rule:
 	cd /home/nasa/catkin_ws/build && $(MAKE) -f CMakeFiles/Makefile2 ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir/rule
 .PHONY : ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir/rule
@@ -574,6 +588,30 @@ src/ros_cyton_client_joystick_demo.cpp.s:
 	cd /home/nasa/catkin_ws/build && $(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_demo.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_demo.dir/src/ros_cyton_client_joystick_demo.cpp.s
 .PHONY : src/ros_cyton_client_joystick_demo.cpp.s
 
+src/ros_cyton_client_joystick_helper.o: src/ros_cyton_client_joystick_helper.cpp.o
+.PHONY : src/ros_cyton_client_joystick_helper.o
+
+# target to build an object file
+src/ros_cyton_client_joystick_helper.cpp.o:
+	cd /home/nasa/catkin_ws/build && $(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/src/ros_cyton_client_joystick_helper.cpp.o
+.PHONY : src/ros_cyton_client_joystick_helper.cpp.o
+
+src/ros_cyton_client_joystick_helper.i: src/ros_cyton_client_joystick_helper.cpp.i
+.PHONY : src/ros_cyton_client_joystick_helper.i
+
+# target to preprocess a source file
+src/ros_cyton_client_joystick_helper.cpp.i:
+	cd /home/nasa/catkin_ws/build && $(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/src/ros_cyton_client_joystick_helper.cpp.i
+.PHONY : src/ros_cyton_client_joystick_helper.cpp.i
+
+src/ros_cyton_client_joystick_helper.s: src/ros_cyton_client_joystick_helper.cpp.s
+.PHONY : src/ros_cyton_client_joystick_helper.s
+
+# target to generate assembly for a file
+src/ros_cyton_client_joystick_helper.cpp.s:
+	cd /home/nasa/catkin_ws/build && $(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/src/ros_cyton_client_joystick_helper.cpp.s
+.PHONY : src/ros_cyton_client_joystick_helper.cpp.s
+
 src/ros_cyton_client_point_ee_demo.o: src/ros_cyton_client_point_ee_demo.cpp.o
 .PHONY : src/ros_cyton_client_point_ee_demo.o
 
@@ -638,6 +676,7 @@ help:
 	@echo "... ros_cyton_client_gripper_demo"
 	@echo "... ros_cyton_client_joint_demo"
 	@echo "... ros_cyton_client_joystick_demo"
+	@echo "... ros_cyton_client_joystick_helper"
 	@echo "... ros_cyton_client_point_ee_demo"
 	@echo "... ros_cyton_pkg_gencpp"
 	@echo "... ros_cyton_pkg_generate_messages"
@@ -672,6 +711,9 @@ help:
 	@echo "... src/ros_cyton_client_joystick_demo.o"
 	@echo "... src/ros_cyton_client_joystick_demo.i"
 	@echo "... src/ros_cyton_client_joystick_demo.s"
+	@echo "... src/ros_cyton_client_joystick_helper.o"
+	@echo "... src/ros_cyton_client_joystick_helper.i"
+	@echo "... src/ros_cyton_client_joystick_helper.s"
 	@echo "... src/ros_cyton_client_point_ee_demo.o"
 	@echo "... src/ros_cyton_client_point_ee_demo.i"
 	@echo "... src/ros_cyton_client_point_ee_demo.s"
