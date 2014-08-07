@@ -1,4 +1,4 @@
- //------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Copyright (c) 2004-2013 Energid Technologies. All rights reserved.
 //
 /// @file ecCytonCommands.cpp
@@ -38,15 +38,15 @@ EcReal myGripper;
 static EcBoolean g_ManipulationComplete = EcFalse;
 void manipCallback(EcBoolean status, void* data)
 {
-   std::cout << "Received sequence completed status of " << (status ? "SUCCESS" : "FAILURE") << std::endl;
-   g_ManipulationComplete = EcTrue;
+	std::cout << "Received sequence completed status of " << (status ? "SUCCESS" : "FAILURE") << std::endl;
+	g_ManipulationComplete = EcTrue;
 }
 
 using namespace Ec;
 //----------------------------------constructor--------------------------------
 EcCytonCommands::EcCytonCommands
-   (
-   )
+(
+)
 {
 
 }
@@ -60,51 +60,51 @@ void EcCytonCommands::initialize(){
 }
 //----------------------------------destructor---------------------------------
 EcCytonCommands::~EcCytonCommands
-   (
-   )
+(
+)
 {
 }
 
 //----------------------------------overloading = -----------------------------
 EcBoolean EcCytonCommands::closeNetwork
-   (
-   )const
+(
+)const
 {
-   shutdown();
-   return EcTrue;
+	shutdown();
+	return EcTrue;
 }
 
 const EcCytonCommands& EcCytonCommands:: operator=
-   (
-   const EcCytonCommands& orig
-   )const
+		(
+				const EcCytonCommands& orig
+		)const
 {
-   return *this;
+	return *this;
 }
 
 //----------------------------------overloading == ----------------------------
 EcBoolean EcCytonCommands:: operator==
-   (
-   const EcCytonCommands& orig
-   )const
-{
-   return EcTrue;
-}
+		(
+				const EcCytonCommands& orig
+		)const
+		{
+	return EcTrue;
+		}
 
 //----------------------------------open network-------------------------------
 EcBoolean EcCytonCommands::openNetwork
-   (
-   const EcString& m_IpAddress
-   )const
+(
+		const EcString& m_IpAddress
+)const
 {
-   EcBoolean retVal = EcTrue;
-   if(!init(m_IpAddress))
-   {
-      std::cerr << "Failed to init\n";
-      return EcFalse;
-   }
-   retVal &= setManipulationCompletedCallback(manipCallback);
-   return EcTrue;
+	EcBoolean retVal = EcTrue;
+	if(!init(m_IpAddress))
+	{
+		std::cerr << "Failed to init\n";
+		return EcFalse;
+	}
+	retVal &= setManipulationCompletedCallback(manipCallback);
+	return EcTrue;
 }
 
 //----------------------------------close network------------------------------
@@ -139,19 +139,19 @@ EcRealVector EcCytonCommands::GetJointsExample
 
    return currentJoints;
 }
-*/
+ */
 
 //////
 EcRealVector EcCytonCommands::GetJointsExample
-   (
-   )const
+(
+)const
 {
-   EcBoolean retVal=EcTrue;
-   //setEndEffectorSet(JOINT_CONTROL_EE_SET);
-   EcSLEEPMS(500);
-   EcRealVector currentJoints;//vector of EcReals that holds the set of joint angles
-   retVal &= getJointValues(currentJoints);
-   /*
+	EcBoolean retVal=EcTrue;
+	//setEndEffectorSet(JOINT_CONTROL_EE_SET);
+	EcSLEEPMS(500);
+	EcRealVector currentJoints;//vector of EcReals that holds the set of joint angles
+	retVal &= getJointValues(currentJoints);
+	/*
    size_t size = currentJoints.size();
 
    std::cout<<"Current Joint Angles: ( ";
@@ -159,13 +159,13 @@ EcRealVector EcCytonCommands::GetJointsExample
    {
       std::cout << currentJoints[ii] << "," ;
    }std::cout<<")"<<std::endl;
-   */
-   return currentJoints;
+	 */
+	return currentJoints;
 }
 
 EcRealVector EcCytonCommands::GetPoseExample
-   (
-   )const
+(
+)const
 {
 
 	boost::mutex::scoped_lock lock(poseLock);
@@ -181,17 +181,17 @@ EcRealVector EcCytonCommands::GetPoseExample
 	pose[2] = translation.z();
 
 	orientation.get123Euler(pose[3],pose[4],pose[5]);
-//	pose[3] = orientation[0];
-//	pose[4] = orientation[1];
-//	pose[5] = orientation[2];
+	//	pose[3] = orientation[0];
+	//	pose[4] = orientation[1];
+	//	pose[5] = orientation[2];
 
 	return pose;
 
 }
 
 EcRealVector EcCytonCommands::GetDesiredPose
-   (
-   )const
+(
+)const
 {
 
 	EcRealVector pose(6);
@@ -227,16 +227,16 @@ EcCoordinateSystemTransformation EcCytonCommands::move( )const{
 
 	EcManipulatorEndEffectorPlacement actualEEPlacement,desiredEEPlacement;
 	EcCoordinateSystemTransformation offset, zero, desiredCoord, actualCoord;
-	   zero.setTranslation(EcVector(0,0,0));
+	zero.setTranslation(EcVector(0,0,0));
 
-	   EcEndEffectorPlacement desiredPlacement(desiredPose);
-	   getActualPlacement(actualEEPlacement);
-	   //EcEndEffectorPlacementVector state = actualEEPlacement.offsetTransformations();//commented out, not used
-	   //state[0]=desiredPlacement;//commented out, not used
-	   setDesiredPlacement(desiredPlacement,0,0);
+	EcEndEffectorPlacement desiredPlacement(desiredPose);
+	getActualPlacement(actualEEPlacement);
+	//EcEndEffectorPlacementVector state = actualEEPlacement.offsetTransformations();//commented out, not used
+	//state[0]=desiredPlacement;//commented out, not used
+	setDesiredPlacement(desiredPlacement,0,0);
 
 
-	  /*
+	/*
 /////////////////////////////////////////////////
 
 	//setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
@@ -259,7 +259,7 @@ EcCoordinateSystemTransformation EcCytonCommands::move( )const{
 
 	   //desiredEEPlacement.setOffsetTransformations(state);
 	setDesiredPlacement(desiredEEPlacement,0);
-*/
+	 */
 
 	poseLock.unlock();
 
@@ -390,266 +390,266 @@ EcBoolean EcCytonCommands::SnapExample( )const{
 }
 
 EcBoolean EcCytonCommands::MoveJointsExample
-   (
-   const EcRealVector jointPosition,
-   const EcReal angletolerance
-   )const
+(
+		const EcRealVector jointPosition,
+		const EcReal angletolerance
+)const
 {
 	if(!getExecuting()){
 		return EcFalse;
 	}
-   EcBoolean retVal=EcTrue;
-   setEndEffectorSet(JOINT_CONTROL_EE_SET);
-   EcSLEEPMS(500);
-   EcRealVector currentJoints;//vector of EcReals that holds the set of joint angles
-   retVal &= getJointValues(currentJoints);
+	EcBoolean retVal=EcTrue;
+	setEndEffectorSet(JOINT_CONTROL_EE_SET);
+	EcSLEEPMS(500);
+	EcRealVector currentJoints;//vector of EcReals that holds the set of joint angles
+	retVal &= getJointValues(currentJoints);
 
-   size_t size = currentJoints.size();
-   if(size < jointPosition.size())
-   {
-      size = currentJoints.size();
-   }
-   else if(size >= jointPosition.size())
-   {
-      size = jointPosition.size();
-   }
+	size_t size = currentJoints.size();
+	if(size < jointPosition.size())
+	{
+		size = currentJoints.size();
+	}
+	else if(size >= jointPosition.size())
+	{
+		size = jointPosition.size();
+	}
 
-   std::cout<<"Current Joint Angles: ( ";
-   for(size_t ii=0; ii<size; ++ii)
-   {
-      std::cout << currentJoints[ii] << "," ;
-      currentJoints[ii] = jointPosition[ii];
-   }
-   std::cout << " )" << std::endl;
+	std::cout<<"Current Joint Angles: ( ";
+	for(size_t ii=0; ii<size; ++ii)
+	{
+		std::cout << currentJoints[ii] << "," ;
+		currentJoints[ii] = jointPosition[ii];
+	}
+	std::cout << " )" << std::endl;
 
-   std::cout << "Desired joint Angles: ( ";
-   for(size_t ii=0; ii<size; ++ii)
-   {
-      std::cout << currentJoints[ii] << "," ;
-   }
-   std::cout <<" )" << std::endl;
+	std::cout << "Desired joint Angles: ( ";
+	for(size_t ii=0; ii<size; ++ii)
+	{
+		std::cout << currentJoints[ii] << "," ;
+	}
+	std::cout <<" )" << std::endl;
 
-   retVal &= setJointValues(currentJoints);
+	retVal &= setJointValues(currentJoints);
 
-   //Check if achived
-   EcBooleanVector jointAchieved;
-   jointAchieved.resize(size);
-   EcBoolean positionAchieved = EcFalse;
-   while(!positionAchieved && getExecuting())
-   {
-      EcPrint(Debug) << "Moving ";
-      getJointValues(currentJoints);
-      EcPrint(Debug) << "Current Joints: ";
-      for(size_t ii=0; ii<size; ++ii)
-      {
+	//Check if achived
+	EcBooleanVector jointAchieved;
+	jointAchieved.resize(size);
+	EcBoolean positionAchieved = EcFalse;
+	while(!positionAchieved && getExecuting())
+	{
+		EcPrint(Debug) << "Moving ";
+		getJointValues(currentJoints);
+		EcPrint(Debug) << "Current Joints: ";
+		for(size_t ii=0; ii<size; ++ii)
+		{
 
-         EcPrint(Debug)  << " , " << currentJoints[ii];
+			EcPrint(Debug)  << " , " << currentJoints[ii];
 
-         if( abs(jointPosition[ii]-currentJoints[ii])<angletolerance)
-         {
-            jointAchieved[ii]=EcTrue;
-         }
-      }
-      EcPrint(Debug) <<std::endl;
-      for(size_t ii=0; ii<size; ++ii)
-      {
-         if(!jointAchieved[ii])
-         {
-            positionAchieved=EcFalse;
-            break;
-         }
-         else
-         {
-            positionAchieved=EcTrue;
-         }
-      }  
-   }
-   std::cout<<" Final Joint Angles: (";
-   for(size_t ii=0; ii<size; ++ii)
-   {
-      std::cout <<  currentJoints[ii] << "," ;
-   }
-   std::cout<<" ) " << std::endl;
+			if( abs(jointPosition[ii]-currentJoints[ii])<angletolerance)
+			{
+				jointAchieved[ii]=EcTrue;
+			}
+		}
+		EcPrint(Debug) <<std::endl;
+		for(size_t ii=0; ii<size; ++ii)
+		{
+			if(!jointAchieved[ii])
+			{
+				positionAchieved=EcFalse;
+				break;
+			}
+			else
+			{
+				positionAchieved=EcTrue;
+			}
+		}
+	}
+	std::cout<<" Final Joint Angles: (";
+	for(size_t ii=0; ii<size; ++ii)
+	{
+		std::cout <<  currentJoints[ii] << "," ;
+	}
+	std::cout<<" ) " << std::endl;
 
-   return retVal;
+	return retVal;
 }
 
 //-----------------------------Point Movement Example-------------------------
 EcBoolean EcCytonCommands::pointMovementExample
-   (
-   const EcCoordinateSystemTransformation& pose
-   )const
+(
+		const EcCoordinateSystemTransformation& pose
+)const
 {
 
 	if(!getExecuting()){
 		return EcFalse;
 	}
-   std::cout<<"Desired pose:  x: "<<pose.translation().x()<< " y: " <<pose.translation().y()<<" z: " <<pose.translation().z()<<std::endl;
+	std::cout<<"Desired pose:  x: "<<pose.translation().x()<< " y: " <<pose.translation().y()<<" z: " <<pose.translation().z()<<std::endl;
 
-   setEndEffectorSet(POINT_EE_SET); // point end effector set index
-   EcEndEffectorPlacement desiredPlacement(pose);
-   EcManipulatorEndEffectorPlacement actualEEPlacement,desiredEEPlacement;
-   EcCoordinateSystemTransformation offset, zero, desiredCoord, actualCoord;
-   zero.setTranslation(EcVector(0,0,0));
+	setEndEffectorSet(POINT_EE_SET); // point end effector set index
+	EcEndEffectorPlacement desiredPlacement(pose);
+	EcManipulatorEndEffectorPlacement actualEEPlacement,desiredEEPlacement;
+	EcCoordinateSystemTransformation offset, zero, desiredCoord, actualCoord;
+	zero.setTranslation(EcVector(0,0,0));
 
-   getActualPlacement(desiredEEPlacement);
-   EcEndEffectorPlacementVector state = desiredEEPlacement.offsetTransformations();
-   state[0]=desiredPlacement;
-   setDesiredPlacement(desiredPlacement,0,0);
+	getActualPlacement(desiredEEPlacement);
+	EcEndEffectorPlacementVector state = desiredEEPlacement.offsetTransformations();
+	state[0]=desiredPlacement;
+	setDesiredPlacement(desiredPlacement,0,0);
 
-   EcBoolean achieved = EcFalse;
-   while(!achieved && getExecuting())
-   {
-      EcPrint(Debug) << "Moving "<<std::endl;
-      getActualPlacement(actualEEPlacement);
-      actualCoord=actualEEPlacement.offsetTransformations()[0].coordSysXForm();
-      getDesiredPlacement(desiredEEPlacement);
-      desiredCoord=desiredEEPlacement.offsetTransformations()[0].coordSysXForm();
+	EcBoolean achieved = EcFalse;
+	while(!achieved && getExecuting())
+	{
+		EcPrint(Debug) << "Moving "<<std::endl;
+		getActualPlacement(actualEEPlacement);
+		actualCoord=actualEEPlacement.offsetTransformations()[0].coordSysXForm();
+		getDesiredPlacement(desiredEEPlacement);
+		desiredCoord=desiredEEPlacement.offsetTransformations()[0].coordSysXForm();
 
-      //get the transformation between the actual and desired 
-      offset=(actualCoord.inverse()) * desiredCoord;
-      EcPrint(Debug)<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
+		//get the transformation between the actual and desired
+		offset=(actualCoord.inverse()) * desiredCoord;
+		EcPrint(Debug)<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
 
-      if(offset.approxEq(zero,.00001))
-      {
-         std::cout<<"Achieved Pose"<<std::endl;
-         achieved = EcTrue;
-      }
-      else{
-    	  //
-      }
-   }
-   return achieved;
+		if(offset.approxEq(zero,.00001))
+		{
+			std::cout<<"Achieved Pose"<<std::endl;
+			achieved = EcTrue;
+		}
+		else{
+			//
+		}
+	}
+	return achieved;
 }
 //an experimental function to move the elbow
 //this works, but is still under heavy testing.
 EcBoolean EcCytonCommands::pointElbowMovementExample
-   (
-		   const int this_joint_ee,
-		   const EcVector tran
-   )const
+(
+		const int this_joint_ee,
+		const EcVector tran
+)const
 {
 
-	   std::cout<<"in.";
+	std::cout<<"in.";
 	if(!getExecuting()){
 		return EcFalse;
 	}
-	   std::cout<<"check.";
-   //std::cout<<"Desired pose:  x: "<<pose.translation().x()<< " y: " <<pose.translation().y()<<" z: " <<pose.translation().z()<<std::endl;
+	std::cout<<"check.";
+	//std::cout<<"Desired pose:  x: "<<pose.translation().x()<< " y: " <<pose.translation().y()<<" z: " <<pose.translation().z()<<std::endl;
 
-   setEndEffectorSet(POINT_EE_SET); // point end effector set index
-   //EcEndEffectorPlacement desiredPlacement(pose);
-   EcManipulatorEndEffectorPlacement actualEEPlacement,desiredEEPlacement;
-   EcCoordinateSystemTransformation offset, zero, desiredCoord, actualCoord;
-   zero.setTranslation(EcVector(0,0,0));
+	setEndEffectorSet(POINT_EE_SET); // point end effector set index
+	//EcEndEffectorPlacement desiredPlacement(pose);
+	EcManipulatorEndEffectorPlacement actualEEPlacement,desiredEEPlacement;
+	EcCoordinateSystemTransformation offset, zero, desiredCoord, actualCoord;
+	zero.setTranslation(EcVector(0,0,0));
 
-   std::cout<<"vectors.";
+	std::cout<<"vectors.";
 
-   getActualPlacement(desiredEEPlacement);
-   EcEndEffectorPlacementVector state = desiredEEPlacement.offsetTransformations();
-   //state[3]=desiredPlacement;
-   //setDesiredPlacement(desiredPlacement,0,0);
+	getActualPlacement(desiredEEPlacement);
+	EcEndEffectorPlacementVector state = desiredEEPlacement.offsetTransformations();
+	//state[3]=desiredPlacement;
+	//setDesiredPlacement(desiredPlacement,0,0);
 
-   std::cout<<"xforms.";
+	std::cout<<"xforms.";
 
-   ///////////
+	///////////
 
-   //set the trnaslation of the driving gripper finger
-   EcCoordinateSystemTransformation elbowTrans = state[this_joint_ee].coordSysXForm();
-   EcVector current = elbowTrans.translation();
-   elbowTrans.setTranslation(tran+current);
-   EcEndEffectorPlacement elbowPlacement = state[this_joint_ee];
-   elbowPlacement.setCoordSysXForm(elbowTrans);
-   state[this_joint_ee]=elbowPlacement;
+	//set the trnaslation of the driving gripper finger
+	EcCoordinateSystemTransformation elbowTrans = state[this_joint_ee].coordSysXForm();
+	EcVector current = elbowTrans.translation();
+	elbowTrans.setTranslation(tran+current);
+	EcEndEffectorPlacement elbowPlacement = state[this_joint_ee];
+	elbowPlacement.setCoordSysXForm(elbowTrans);
+	state[this_joint_ee]=elbowPlacement;
 
-   std::cout<<"placements.";
-   desiredEEPlacement.setOffsetTransformations(state);
+	std::cout<<"placements.";
+	desiredEEPlacement.setOffsetTransformations(state);
 
-   //set the desired placement
-   setDesiredPlacement(desiredEEPlacement,0);
+	//set the desired placement
+	setDesiredPlacement(desiredEEPlacement,0);
 
-   std::cout<<"exec."<<std::endl;
-   ////////
+	std::cout<<"exec."<<std::endl;
+	////////
 
-   EcBoolean achieved = EcFalse;
-   while(!achieved && getExecuting())
-   {
-      EcPrint(Debug) << "Moving "<<std::endl;
-      getActualPlacement(actualEEPlacement);
-      actualCoord=actualEEPlacement.offsetTransformations()[3].coordSysXForm();
-      getDesiredPlacement(desiredEEPlacement);
-      desiredCoord=desiredEEPlacement.offsetTransformations()[3].coordSysXForm();
+	EcBoolean achieved = EcFalse;
+	while(!achieved && getExecuting())
+	{
+		EcPrint(Debug) << "Moving "<<std::endl;
+		getActualPlacement(actualEEPlacement);
+		actualCoord=actualEEPlacement.offsetTransformations()[3].coordSysXForm();
+		getDesiredPlacement(desiredEEPlacement);
+		desiredCoord=desiredEEPlacement.offsetTransformations()[3].coordSysXForm();
 
-      //get the transformation between the actual and desired
-      offset=(actualCoord.inverse()) * desiredCoord;
-      //EcPrint(Debug)
+		//get the transformation between the actual and desired
+		offset=(actualCoord.inverse()) * desiredCoord;
+		//EcPrint(Debug)
 
-      std::cout<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
+		std::cout<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
 
-      if(offset.approxEq(zero,.00001))
-      {
-         std::cout<<"Achieved Pose"<<std::endl;
-         achieved = EcTrue;
-      }
-      else{
-    	  //
-      }
-   }
-   return achieved;
+		if(offset.approxEq(zero,.00001))
+		{
+			std::cout<<"Achieved Pose"<<std::endl;
+			achieved = EcTrue;
+		}
+		else{
+			//
+		}
+	}
+	return achieved;
 }
 
 EcBoolean _executing = EcTrue;
 //-----------------------------Frame Movement Example-------------------------
 EcBoolean EcCytonCommands::frameMovementExample
-   (
-   const EcCoordinateSystemTransformation& pose
-   )const
+(
+		const EcCoordinateSystemTransformation& pose
+)const
 {
 
 	if(!getExecuting()){
 		return EcFalse;
 	}
-   //std::cout<<"Desired pose:  x: "<<pose.translation().x()<< " y: " <<pose.translation().y()<<" z: " <<pose.translation().z()<<std::endl;
+	//std::cout<<"Desired pose:  x: "<<pose.translation().x()<< " y: " <<pose.translation().y()<<" z: " <<pose.translation().z()<<std::endl;
 
-   setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
-   EcEndEffectorPlacement desiredPlacement(pose);
-   EcManipulatorEndEffectorPlacement actualEEPlacement,desiredEEPlacement;
-   EcCoordinateSystemTransformation offset, zero, desiredCoord, actualCoord;
-   zero.setTranslation(EcVector(0,0,0));
+	setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
+	EcEndEffectorPlacement desiredPlacement(pose);
+	EcManipulatorEndEffectorPlacement actualEEPlacement,desiredEEPlacement;
+	EcCoordinateSystemTransformation offset, zero, desiredCoord, actualCoord;
+	zero.setTranslation(EcVector(0,0,0));
 
-   getActualPlacement(actualEEPlacement);
-   EcEndEffectorPlacementVector state = actualEEPlacement.offsetTransformations();
-   state[0]=desiredPlacement;
-   setDesiredPlacement(desiredPlacement,0,0);
+	getActualPlacement(actualEEPlacement);
+	EcEndEffectorPlacementVector state = actualEEPlacement.offsetTransformations();
+	state[0]=desiredPlacement;
+	setDesiredPlacement(desiredPlacement,0,0);
 
-   EcBoolean achieved = EcFalse;
+	EcBoolean achieved = EcFalse;
 
 
-   while(!achieved && getExecuting())
-   {
-      EcPrint(Debug) << "Moving "<<std::endl;
-      getActualPlacement(actualEEPlacement);
-      actualCoord=actualEEPlacement.offsetTransformations()[0].coordSysXForm();
-      getDesiredPlacement(desiredEEPlacement);
-      desiredCoord=desiredEEPlacement.offsetTransformations()[0].coordSysXForm();
+	while(!achieved && getExecuting())
+	{
+		EcPrint(Debug) << "Moving "<<std::endl;
+		getActualPlacement(actualEEPlacement);
+		actualCoord=actualEEPlacement.offsetTransformations()[0].coordSysXForm();
+		getDesiredPlacement(desiredEEPlacement);
+		desiredCoord=desiredEEPlacement.offsetTransformations()[0].coordSysXForm();
 
-      //get the transformation between the actual and desired 
-      offset=(actualCoord.inverse()) * desiredCoord;
-      EcPrint(Debug)<<"Distance between actual and desired: "<<offset.translation().mag()<<std::endl;
+		//get the transformation between the actual and desired
+		offset=(actualCoord.inverse()) * desiredCoord;
+		EcPrint(Debug)<<"Distance between actual and desired: "<<offset.translation().mag()<<std::endl;
 
-      if(offset.approxEq(zero,.00001))
-      {
-         EcPrint(Debug)<<"Achieved Pose"<<std::endl;
-         achieved = EcTrue;
-      }
-      ////added this:
-      else{
-    	  //std::cout<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
-      }
-      ////
-   }
+		if(offset.approxEq(zero,.00001))
+		{
+			EcPrint(Debug)<<"Achieved Pose"<<std::endl;
+			achieved = EcTrue;
+		}
+		////added this:
+		else{
+			//std::cout<<"distance between actual and desired: "<<offset.translation().mag()<<std::endl;
+		}
+		////
+	}
 
-   return achieved;
+	return achieved;
 }
 bool _execute = false;
 EcBoolean EcCytonCommands::getExecuting()const{
@@ -663,461 +663,457 @@ void EcCytonCommands::setExecuting(bool exec)const{
 
 //-----------------------------move gripper test-------------------------
 EcBoolean EcCytonCommands::moveGripperExample
-   (
-   const EcReal gripperPos
-   )const
+(
+		const EcReal gripperPos
+)const
 {
 	if(!getExecuting()){
 		return EcFalse;
 	}
-   EcBoolean retVal=EcTrue;
+	EcBoolean retVal=EcTrue;
 
 	//boost::mutex::scoped_lock lock(poseLock);
 	//myGripper = gripperPos;
 
-   EcManipulatorEndEffectorPlacement actualEEPlacement,desiredEEPlacement;
+	EcManipulatorEndEffectorPlacement actualEEPlacement,desiredEEPlacement;
 
-   setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
-   EcSLEEPMS(100);
-   //get the current placement of the end effectors
-   getActualPlacement(actualEEPlacement);
+	setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
+	EcSLEEPMS(100);
+	//get the current placement of the end effectors
+	getActualPlacement(actualEEPlacement);
 
-   //0 is the Wrist roll joint (point or frame end effector), 
-   //1 is the first gripper finger (linear constraint end effector)
-   EcEndEffectorPlacementVector state = actualEEPlacement.offsetTransformations();
+	//0 is the Wrist roll joint (point or frame end effector),
+	//1 is the first gripper finger (linear constraint end effector)
+	EcEndEffectorPlacementVector state = actualEEPlacement.offsetTransformations();
 
-   //set the trnaslation of the driving gripper finger
-   EcCoordinateSystemTransformation gripperfinger1trans = state[1].coordSysXForm();
-   gripperfinger1trans.setTranslation(EcVector(0,0,gripperPos));
-   EcEndEffectorPlacement finger1placement = state[1];
-   finger1placement.setCoordSysXForm(gripperfinger1trans);
-   state[1]=finger1placement;
+	//set the trnaslation of the driving gripper finger
+	EcCoordinateSystemTransformation gripperfinger1trans = state[1].coordSysXForm();
+	gripperfinger1trans.setTranslation(EcVector(0,0,gripperPos));
+	EcEndEffectorPlacement finger1placement = state[1];
+	finger1placement.setCoordSysXForm(gripperfinger1trans);
+	state[1]=finger1placement;
 
-   desiredEEPlacement.setOffsetTransformations(state);
+	desiredEEPlacement.setOffsetTransformations(state);
 
-   //set the desired placement
-   setDesiredPlacement(desiredEEPlacement,0);
-   std::cout<<"Moving Gripper to: "<<gripperPos<<std::endl;
+	//set the desired placement
+	setDesiredPlacement(desiredEEPlacement,0);
+	std::cout<<"Moving Gripper to: "<<gripperPos<<std::endl;
 
-   return retVal;
+	return retVal;
 }
 
 //-----------------------------manipulation action test-------------------------
 EcBoolean EcCytonCommands::manipulationActionTest
-   (
-   const EcString& filename,
-   const EcString& actionName,
-   const EcU32& timeInMS
-   )const
+(
+		const EcString& filename,
+		const EcString& actionName,
+		const EcU32& timeInMS
+)const
 {
-   EcManipulationActionManager actionManager;
-   EcBoolean retVal = EcXmlObjectReaderWriter::readFromFile(actionManager, filename);
+	EcManipulationActionManager actionManager;
+	EcBoolean retVal = EcXmlObjectReaderWriter::readFromFile(actionManager, filename);
 
-   if(!retVal)
-   {
-      return retVal;
-   }
+	if(!retVal)
+	{
+		return retVal;
+	}
 
-   retVal = setManipulationActionManager(actionManager);
-   if(!retVal)
-   {
-      return retVal;
-   }
+	retVal = setManipulationActionManager(actionManager);
+	if(!retVal)
+	{
+		return retVal;
+	}
 
-   retVal = setManipulationAction(actionName);
-   if(!retVal)
-   {
-      return retVal;
-   }
+	retVal = setManipulationAction(actionName);
+	if(!retVal)
+	{
+		return retVal;
+	}
 
-   retVal = startManipulation();
-   if(!retVal)
-   {
-      return retVal;
-   }
+	retVal = startManipulation();
+	if(!retVal)
+	{
+		return retVal;
+	}
 
-   EcSLEEPMS(timeInMS);
+	EcSLEEPMS(timeInMS);
 
-   retVal = stopManipulation();
-   if(!retVal)
-   {
-      return retVal;
-   }
-   return retVal;
+	retVal = stopManipulation();
+	if(!retVal)
+	{
+		return retVal;
+	}
+	return retVal;
 }
 
+// a pick and place example
 EcBoolean EcCytonCommands::pickAndPlaceExample
-   (
-   const EcString& cytonModel
-   )const
+(
+		const EcString& cytonModel
+)const
 {
-   EcRealVector initJoints(7);//vector of EcReals that holds the set of joint angles
-   initJoints[1]=-.7;
-   initJoints[3]=-.7;
-   initJoints[5]=-.7;
+	EcRealVector initJoints(7);//vector of EcReals that holds the set of joint angles
+	initJoints[1]=-.7;
+	initJoints[3]=-.7;
+	initJoints[5]=-.7;
 
-   //Move Joints
-   MoveJointsExample(initJoints,.000001);
-
-
-   //open the gripper
-   if(cytonModel == "1500" || cytonModel == "300" )
-   {
-      moveGripperExample(0.0149);
-   }
-   if(cytonModel == "1500R2" || cytonModel == "300PX" )
-   {
-      moveGripperExample(0.0149);
-   }
+	//Move Joints
+	MoveJointsExample(initJoints,.000001);
 
 
-   if(cytonModel == "1500" || cytonModel == "1500R2")
-   {
-
-      EcCoordinateSystemTransformation desiredPose;
-      desiredPose.setTranslation(EcVector(0,.35,.2));
-      EcOrientation orient;
-      orient.setFrom123Euler(0,0,EcPi/2);//set roll, pitch,yaw
-      desiredPose.setOrientation(orient);
-      frameMovementExample(desiredPose);   
-
-      desiredPose.setTranslation(EcVector(.115,.35,.2));
-      frameMovementExample(desiredPose);   
-
-      desiredPose.setTranslation(EcVector(.115,.35,.05));
-      frameMovementExample(desiredPose); 
-
-      //close the gripper
-      if(cytonModel == "1500" || cytonModel == "300" )
-      {
-         moveGripperExample(0.0015);
-      }
-      if(cytonModel == "1500R2" || cytonModel == "300PX" )
-      {
-         moveGripperExample(0.001);
-      }
-      EcSLEEPMS(1000);
-
-      desiredPose.setTranslation(EcVector(.115,.35,.2));
-      frameMovementExample(desiredPose);   
-
-      desiredPose.setTranslation(EcVector(0,.35,.2));
-      frameMovementExample(desiredPose);   
-
-      orient.setFrom123Euler(0,0,EcPi);//set roll, pitch,yaw
-      desiredPose.setOrientation(orient);
-      frameMovementExample(desiredPose); 
-
-      desiredPose.setTranslation(EcVector(0,.35,.05));
-      frameMovementExample(desiredPose);   
+	//open the gripper
+	if(cytonModel == "1500" || cytonModel == "300" )
+	{
+		moveGripperExample(0.0149);
+	}
+	if(cytonModel == "1500R2" || cytonModel == "300PX" )
+	{
+		moveGripperExample(0.0149);
+	}
 
 
-      //Opem the gripper
-      if(cytonModel == "1500" || cytonModel == "300" )
-      {
-         moveGripperExample(0.0149);
-      }
-      if(cytonModel == "1500R2" || cytonModel == "300PX" )
-      {
-         moveGripperExample(0.0149);
-      }
-      EcSLEEPMS(1000);
+	if(cytonModel == "1500" || cytonModel == "1500R2")
+	{
 
-      desiredPose.setTranslation(EcVector(0,.35,.2));
-      frameMovementExample(desiredPose);   
-   }
+		EcCoordinateSystemTransformation desiredPose;
+		desiredPose.setTranslation(EcVector(0,.35,.2));
+		EcOrientation orient;
+		orient.setFrom123Euler(0,0,EcPi/2);//set roll, pitch,yaw
+		desiredPose.setOrientation(orient);
+		frameMovementExample(desiredPose);
 
-   if(cytonModel=="300" || cytonModel=="300PX" )
-   {
-      EcCoordinateSystemTransformation desiredPose;
-      desiredPose.setTranslation(EcVector(0,.2,.15));
-      EcOrientation orient;
-      orient.setFrom123Euler(0,0,EcPi/2);//set roll, pitch,yaw
-      desiredPose.setOrientation(orient);
+		desiredPose.setTranslation(EcVector(.115,.35,.2));
+		frameMovementExample(desiredPose);
 
-      setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
+		desiredPose.setTranslation(EcVector(.115,.35,.05));
+		frameMovementExample(desiredPose);
 
-      frameMovementExample(desiredPose);   
+		//close the gripper
+		if(cytonModel == "1500" || cytonModel == "300" )
+		{
+			moveGripperExample(0.0015);
+		}
+		if(cytonModel == "1500R2" || cytonModel == "300PX" )
+		{
+			moveGripperExample(0.001);
+		}
+		EcSLEEPMS(1000);
 
-      desiredPose.setTranslation(EcVector(.1,.2,.15));
-      frameMovementExample(desiredPose);   
+		desiredPose.setTranslation(EcVector(.115,.35,.2));
+		frameMovementExample(desiredPose);
 
-      desiredPose.setTranslation(EcVector(.1,.2,.05));
-      frameMovementExample(desiredPose); 
+		desiredPose.setTranslation(EcVector(0,.35,.2));
+		frameMovementExample(desiredPose);
 
-      //close the gripper
-      if(cytonModel == "1500" || cytonModel == "300" )
-      {
-         moveGripperExample(0.0075);//(0.0015)//all the way closed
-      }
-      if(cytonModel == "1500R2" || cytonModel == "300PX" )
-      {
-         moveGripperExample(0.001);
-      }
-      EcSLEEPMS(1000);
+		orient.setFrom123Euler(0,0,EcPi);//set roll, pitch,yaw
+		desiredPose.setOrientation(orient);
+		frameMovementExample(desiredPose);
+
+		desiredPose.setTranslation(EcVector(0,.35,.05));
+		frameMovementExample(desiredPose);
 
 
-      desiredPose.setTranslation(EcVector(.1,.2,.1));
-      frameMovementExample(desiredPose);   
+		//Opem the gripper
+		if(cytonModel == "1500" || cytonModel == "300" )
+		{
+			moveGripperExample(0.0149);
+		}
+		if(cytonModel == "1500R2" || cytonModel == "300PX" )
+		{
+			moveGripperExample(0.0149);
+		}
+		EcSLEEPMS(1000);
+
+		desiredPose.setTranslation(EcVector(0,.35,.2));
+		frameMovementExample(desiredPose);
+	}
+
+	if(cytonModel=="300" || cytonModel=="300PX" )
+	{
+		EcCoordinateSystemTransformation desiredPose;
+		desiredPose.setTranslation(EcVector(0,.2,.15));
+		EcOrientation orient;
+		orient.setFrom123Euler(0,0,EcPi/2);//set roll, pitch,yaw
+		desiredPose.setOrientation(orient);
+
+		setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
+
+		frameMovementExample(desiredPose);
+
+		desiredPose.setTranslation(EcVector(.1,.2,.15));
+		frameMovementExample(desiredPose);
+
+		desiredPose.setTranslation(EcVector(.1,.2,.05));
+		frameMovementExample(desiredPose);
+
+		//close the gripper
+		if(cytonModel == "1500" || cytonModel == "300" )
+		{
+			moveGripperExample(0.0075);//(0.0015)//all the way closed
+		}
+		if(cytonModel == "1500R2" || cytonModel == "300PX" )
+		{
+			moveGripperExample(0.001);
+		}
+		EcSLEEPMS(1000);
 
 
-      desiredPose.setTranslation(EcVector(0,.2,.15));
-      frameMovementExample(desiredPose);   
-
-      orient.setFrom123Euler(0,0,EcPi);//set roll, pitch,yaw
-      desiredPose.setOrientation(orient);
-      frameMovementExample(desiredPose); 
-
-      desiredPose.setTranslation(EcVector(0,.2,.05));
-      frameMovementExample(desiredPose);   
+		desiredPose.setTranslation(EcVector(.1,.2,.1));
+		frameMovementExample(desiredPose);
 
 
-      //open the gripper
-      if(cytonModel == "1500" || cytonModel == "300" )
-      {
-         moveGripperExample(0.0149);
-      }
-      if(cytonModel == "1500R2" || cytonModel == "300PX" )
-      {
-         moveGripperExample(0.0149);
-      }
-      EcSLEEPMS(1000);
+		desiredPose.setTranslation(EcVector(0,.2,.15));
+		frameMovementExample(desiredPose);
 
-      desiredPose.setTranslation(EcVector(0,.2,.15));
-      frameMovementExample(desiredPose);   
-   }
-   return EcTrue;
+		orient.setFrom123Euler(0,0,EcPi);//set roll, pitch,yaw
+		desiredPose.setOrientation(orient);
+		frameMovementExample(desiredPose);
+
+		desiredPose.setTranslation(EcVector(0,.2,.05));
+		frameMovementExample(desiredPose);
+
+
+		//open the gripper
+		if(cytonModel == "1500" || cytonModel == "300" )
+		{
+			moveGripperExample(0.0149);
+		}
+		if(cytonModel == "1500R2" || cytonModel == "300PX" )
+		{
+			moveGripperExample(0.0149);
+		}
+		EcSLEEPMS(1000);
+
+		desiredPose.setTranslation(EcVector(0,.2,.15));
+		frameMovementExample(desiredPose);
+	}
+	return EcTrue;
 
 
 }
 
-/////////////////
-
+// the stack example
 EcBoolean EcCytonCommands::pickAndStackExample
-   (
-   const EcString& cytonModel,double pick ,double stack
-   )const
+(
+		const EcString& cytonModel,double pick ,double stack
+)const
 {
-   EcRealVector initJoints(7);//vector of EcReals that holds the set of joint angles
-   initJoints[1]=-.7;
-   initJoints[3]=-.7;
-   initJoints[5]=-.7;
+	EcRealVector initJoints(7);//vector of EcReals that holds the set of joint angles
+	initJoints[1]=-.7;
+	initJoints[3]=-.7;
+	initJoints[5]=-.7;
 
-   //Move Joints
-   MoveJointsExample(initJoints,.000001);
-
-
-   //open the gripper
-   if(cytonModel == "1500" || cytonModel == "300" )
-   {
-      moveGripperExample(0.0149);
-   }
-   if(cytonModel == "1500R2" || cytonModel == "300PX" )
-   {
-      moveGripperExample(0.0149);
-   }
+	//Move Joints
+	MoveJointsExample(initJoints,.000001);
 
 
-   if(cytonModel == "1500" || cytonModel == "1500R2")
-   {
-	   //removed, see pickAndPlace
-   }
-
-   if(cytonModel=="300" || cytonModel=="300PX" )
-   {
-      EcCoordinateSystemTransformation desiredPose;
-      desiredPose.setTranslation(EcVector(0,.2,.15));
-      EcOrientation orient;
-      orient.setFrom123Euler(0,0,EcPi/2);//set roll, pitch,yaw
-      desiredPose.setOrientation(orient);
-
-      setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
-
-      frameMovementExample(desiredPose);
-
-      desiredPose.setTranslation(EcVector(.1,.2,.15));
-      frameMovementExample(desiredPose);
-
-      desiredPose.setTranslation(EcVector(.1,.2,pick));
-      frameMovementExample(desiredPose);
-
-      //close the gripper
-      if(cytonModel == "1500" || cytonModel == "300" )
-      {
-         moveGripperExample(0.0076);//(0.0015)//all the way closed
-      }
-      if(cytonModel == "1500R2" || cytonModel == "300PX" )
-      {
-         moveGripperExample(0.001);
-      }
-      EcSLEEPMS(1000);
+	//open the gripper
+	if(cytonModel == "1500" || cytonModel == "300" )
+	{
+		moveGripperExample(0.0149);
+	}
+	if(cytonModel == "1500R2" || cytonModel == "300PX" )
+	{
+		moveGripperExample(0.0149);
+	}
 
 
-      desiredPose.setTranslation(EcVector(.1,.2,.1));
-      frameMovementExample(desiredPose);
+	if(cytonModel == "1500" || cytonModel == "1500R2")
+	{
+		//removed, see pickAndPlace
+	}
+
+	if(cytonModel=="300" || cytonModel=="300PX" )
+	{
+		EcCoordinateSystemTransformation desiredPose;
+		desiredPose.setTranslation(EcVector(0,.2,.15));
+		EcOrientation orient;
+		orient.setFrom123Euler(0,0,EcPi/2);//set roll, pitch,yaw
+		desiredPose.setOrientation(orient);
+
+		setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
+
+		frameMovementExample(desiredPose);
+
+		desiredPose.setTranslation(EcVector(.1,.2,.15));
+		frameMovementExample(desiredPose);
+
+		desiredPose.setTranslation(EcVector(.1,.2,pick));
+		frameMovementExample(desiredPose);
+
+		//close the gripper
+		if(cytonModel == "1500" || cytonModel == "300" )
+		{
+			moveGripperExample(0.0076);//(0.0015)//all the way closed
+		}
+		if(cytonModel == "1500R2" || cytonModel == "300PX" )
+		{
+			moveGripperExample(0.001);
+		}
+		EcSLEEPMS(1000);
 
 
-      desiredPose.setTranslation(EcVector(0,.2,.15));
-      frameMovementExample(desiredPose);
-
-      orient.setFrom123Euler(0,0,EcPi);//set roll, pitch,yaw
-      desiredPose.setOrientation(orient);
-      frameMovementExample(desiredPose);
-
-      desiredPose.setTranslation(EcVector(0,.2,stack));
-      frameMovementExample(desiredPose);
+		desiredPose.setTranslation(EcVector(.1,.2,.1));
+		frameMovementExample(desiredPose);
 
 
-      //open the gripper
-      if(cytonModel == "1500" || cytonModel == "300" )
-      {
-         moveGripperExample(0.0149);
-      }
-      if(cytonModel == "1500R2" || cytonModel == "300PX" )
-      {
-         moveGripperExample(0.0149);
-      }
-      EcSLEEPMS(1000);
+		desiredPose.setTranslation(EcVector(0,.2,.15));
+		frameMovementExample(desiredPose);
 
-      desiredPose.setTranslation(EcVector(0,.2,.15));
-      frameMovementExample(desiredPose);
-   }
-   return EcTrue;
+		orient.setFrom123Euler(0,0,EcPi);//set roll, pitch,yaw
+		desiredPose.setOrientation(orient);
+		frameMovementExample(desiredPose);
+
+		desiredPose.setTranslation(EcVector(0,.2,stack));
+		frameMovementExample(desiredPose);
+
+
+		//open the gripper
+		if(cytonModel == "1500" || cytonModel == "300" )
+		{
+			moveGripperExample(0.0149);
+		}
+		if(cytonModel == "1500R2" || cytonModel == "300PX" )
+		{
+			moveGripperExample(0.0149);
+		}
+		EcSLEEPMS(1000);
+
+		desiredPose.setTranslation(EcVector(0,.2,.15));
+		frameMovementExample(desiredPose);
+	}
+	return EcTrue;
 }
 
-//////////
-
-/////////////////
-
+// the un-stack example
 EcBoolean EcCytonCommands::pickAndUnStackExample
-   (
-   const EcString& cytonModel,double pick ,double stack
-   )const
+(
+		const EcString& cytonModel,double pick ,double stack
+)const
 {
-   EcRealVector initJoints(7);//vector of EcReals that holds the set of joint angles
-   initJoints[1]=-.7;
-   initJoints[3]=-.7;
-   initJoints[5]=-.7;
+	EcRealVector initJoints(7);//vector of EcReals that holds the set of joint angles
+	initJoints[1]=-.7;
+	initJoints[3]=-.7;
+	initJoints[5]=-.7;
 
-   //Move Joints
-   MoveJointsExample(initJoints,.000001);
-
-
-   //open the gripper
-   if(cytonModel == "1500" || cytonModel == "300" )
-   {
-      moveGripperExample(0.0149);
-   }
-   if(cytonModel == "1500R2" || cytonModel == "300PX" )
-   {
-      moveGripperExample(0.0149);
-   }
+	//Move Joints
+	MoveJointsExample(initJoints,.000001);
 
 
-   if(cytonModel == "1500" || cytonModel == "1500R2")
-   {
-	   //removed, see pickAndPlace
-   }
-
-   if(cytonModel=="300" || cytonModel=="300PX" )
-   {
-
-      EcCoordinateSystemTransformation desiredPose;
-      desiredPose.setTranslation(EcVector(0,.2,.15));
-      EcOrientation orient;
-
-      setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
-
-      orient.setFrom123Euler(0,0,EcPi);//set roll, pitch,yaw
-      desiredPose.setOrientation(orient);
-      frameMovementExample(desiredPose);
-
-      desiredPose.setTranslation(EcVector(0,.2,stack));
-      frameMovementExample(desiredPose);
-
-      //close the gripper
-      if(cytonModel == "1500" || cytonModel == "300" )
-      {
-         moveGripperExample(0.0076);//(0.0015)//all the way closed
-      }
-      if(cytonModel == "1500R2" || cytonModel == "300PX" )
-      {
-         moveGripperExample(0.001);
-      }
-      EcSLEEPMS(1000);
-
-      //move up
-
-      desiredPose.setTranslation(EcVector(0,.2,.15));
-      frameMovementExample(desiredPose);
-
-      //rotate
-
-      orient.setFrom123Euler(0,0,EcPi/2);//set roll, pitch,yaw
-      desiredPose.setOrientation(orient);
-
-      frameMovementExample(desiredPose);
+	//open the gripper
+	if(cytonModel == "1500" || cytonModel == "300" )
+	{
+		moveGripperExample(0.0149);
+	}
+	if(cytonModel == "1500R2" || cytonModel == "300PX" )
+	{
+		moveGripperExample(0.0149);
+	}
 
 
-      //move over
-      desiredPose.setTranslation(EcVector(.1,.2,.15));
-      frameMovementExample(desiredPose);
-      //move down
-      desiredPose.setTranslation(EcVector(.1,.2,pick));
-      frameMovementExample(desiredPose);
-      //open gripper
-      if(cytonModel == "1500" || cytonModel == "300" )
-      {
-         moveGripperExample(0.0149);//(0.0015)//all the way closed
-      }
-      if(cytonModel == "1500R2" || cytonModel == "300PX" )
-      {
-         moveGripperExample(0.0149);
-      }
-      EcSLEEPMS(1000);
+	if(cytonModel == "1500" || cytonModel == "1500R2")
+	{
+		//removed, see pickAndPlace
+	}
+
+	if(cytonModel=="300" || cytonModel=="300PX" )
+	{
+
+		EcCoordinateSystemTransformation desiredPose;
+		desiredPose.setTranslation(EcVector(0,.2,.15));
+		EcOrientation orient;
+
+		setEndEffectorSet(FRAME_EE_SET); // frame end effector set index
+
+		orient.setFrom123Euler(0,0,EcPi);//set roll, pitch,yaw
+		desiredPose.setOrientation(orient);
+		frameMovementExample(desiredPose);
+
+		desiredPose.setTranslation(EcVector(0,.2,stack));
+		frameMovementExample(desiredPose);
+
+		//close the gripper
+		if(cytonModel == "1500" || cytonModel == "300" )
+		{
+			moveGripperExample(0.0076);//(0.0015)//all the way closed
+		}
+		if(cytonModel == "1500R2" || cytonModel == "300PX" )
+		{
+			moveGripperExample(0.001);
+		}
+		EcSLEEPMS(1000);
+
+		//move up
+
+		desiredPose.setTranslation(EcVector(0,.2,.15));
+		frameMovementExample(desiredPose);
+
+		//rotate
+
+		orient.setFrom123Euler(0,0,EcPi/2);//set roll, pitch,yaw
+		desiredPose.setOrientation(orient);
+
+		frameMovementExample(desiredPose);
 
 
-      desiredPose.setTranslation(EcVector(0.1,.2,.15));
-      frameMovementExample(desiredPose);
-////////move rotate open
+		//move over
+		desiredPose.setTranslation(EcVector(.1,.2,.15));
+		frameMovementExample(desiredPose);
+		//move down
+		desiredPose.setTranslation(EcVector(.1,.2,pick));
+		frameMovementExample(desiredPose);
+		//open gripper
+		if(cytonModel == "1500" || cytonModel == "300" )
+		{
+			moveGripperExample(0.0149);//(0.0015)//all the way closed
+		}
+		if(cytonModel == "1500R2" || cytonModel == "300PX" )
+		{
+			moveGripperExample(0.0149);
+		}
+		EcSLEEPMS(1000);
 
-      desiredPose.setTranslation(EcVector(0,.2,.15));
-      frameMovementExample(desiredPose);
-   }
-   return EcTrue;
+
+		desiredPose.setTranslation(EcVector(0.1,.2,.15));
+		frameMovementExample(desiredPose);
+		////////move rotate open
+
+		desiredPose.setTranslation(EcVector(0,.2,.15));
+		frameMovementExample(desiredPose);
+	}
+	return EcTrue;
 }
 
-//////////
-
-
+// some default hardware test, not yet used or tested
 EcBoolean EcCytonCommands::hardwareEnableTest
-   (
-   const EcBoolean flag
-   )const
+(
+		const EcBoolean flag
+)const
 {
-   return setHardwareEnable(flag);
+	return setHardwareEnable(flag);
 }
 
+// this is a default function, but haven't had much success using it.
 EcBoolean EcCytonCommands::resetToHome
-   (
-   )const
+(
+)const
 {
 
-   EcRealVector joints;
-   EcBoolean retVal = getJointValues(joints);
+	EcRealVector joints;
+	EcBoolean retVal = getJointValues(joints);
 
-   size_t size = joints.size();
+	size_t size = joints.size();
 
-   // increment all joints except the last
-   for(size_t ii=0; ii<size; ++ii)
-   {
-      joints[ii] = 0.0;
-   }
+	// increment all joints except the last
+	for(size_t ii=0; ii<size; ++ii)
+	{
+		joints[ii] = 0.0;
+	}
 
-   retVal &= setJointValues(joints);
-   EcSLEEPMS(2000);
+	retVal &= setJointValues(joints);
+	EcSLEEPMS(2000);
 
-   return retVal;
+	return retVal;
 }
 
 /////
