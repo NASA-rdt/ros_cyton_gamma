@@ -36,3 +36,5 @@ cd ~/catkin_ws/build/bin
 cd ~/catkin_ws/build/bin
 ./ros_cyton_client_joystick_helper
 ```
+
+Note: login details hint: 'nasa'
