@@ -171,6 +171,7 @@ SET(CMAKE_DEPEND_INFO_FILES
   "ros_cyton_pkg/CMakeFiles/ros_cyton_client_gripper_demo.dir/DependInfo.cmake"
   "ros_cyton_pkg/CMakeFiles/ros_cyton_client_joint_demo.dir/DependInfo.cmake"
   "ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_demo.dir/DependInfo.cmake"
+  "ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/DependInfo.cmake"
   "ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir/DependInfo.cmake"
   "ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_gencpp.dir/DependInfo.cmake"
   "ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir/DependInfo.cmake"

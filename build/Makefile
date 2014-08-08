@@ -277,6 +277,19 @@ ros_cyton_client_joystick_demo/fast:
 .PHONY : ros_cyton_client_joystick_demo/fast
 
 #=============================================================================
+# Target rules for targets named ros_cyton_client_joystick_helper
+
+# Build rule for target.
+ros_cyton_client_joystick_helper: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ros_cyton_client_joystick_helper
+.PHONY : ros_cyton_client_joystick_helper
+
+# fast build rule for target.
+ros_cyton_client_joystick_helper/fast:
+	$(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/build
+.PHONY : ros_cyton_client_joystick_helper/fast
+
+#=============================================================================
 # Target rules for targets named ros_cyton_client_point_ee_demo
 
 # Build rule for target.
@@ -533,6 +546,7 @@ help:
 	@echo "... ros_cyton_client_gripper_demo"
 	@echo "... ros_cyton_client_joint_demo"
 	@echo "... ros_cyton_client_joystick_demo"
+	@echo "... ros_cyton_client_joystick_helper"
 	@echo "... ros_cyton_client_point_ee_demo"
 	@echo "... ros_cyton_pkg_gencpp"
 	@echo "... ros_cyton_pkg_generate_messages"

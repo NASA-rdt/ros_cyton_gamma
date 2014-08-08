@@ -30,9 +30,6 @@ ros::Publisher ee_rate_pub;
 ros::Publisher joint_val_pub;
 ros::Publisher execute_pub;
 
-#define DO_NOT_MODIFY 1001
-int JOINT_WRIST = 1;
-
 std::vector<double> ee_rates(7);//x,y,z,roll,pitch,yaw,gripper
 ros::Publisher gripper_val_pub;
 std::vector<double> joint_values(7);
@@ -205,28 +202,6 @@ bool Send_Command(std::string command)
 
 	return true;
 }
-bool Modify_Joint_Pose(int limb, double value){
-	std::vector<double> joint_pos(7);
-		std_msgs::String mode_msg;
-		std_msgs::String execute;
-		std_msgs::Float64MultiArray joint_pose;
-
-		joint_pos.assign(7,DO_NOT_MODIFY);//seven values at ridiculous threshold
-		if(limb < 8) joint_pos[limb] = value;//set
-		//joint_pos.insert(joint_pos.begin(),joint_pose_array,joint_pose_array+7);
-		ROS_INFO("Setting Joint_%d to %f",limb,value);
-
-		joint_pose.data = joint_pos;
-
-		std::stringstream ss;
-		ss <<"joint_mode";
-		mode_msg.data = ss.str();
-
-		///Sending messages
-		mode_pub.publish(mode_msg);
-		joint_val_pub.publish(joint_pose);
-}
-
 bool Send_Gripper_Value(double value)
 
 {
@@ -272,15 +247,17 @@ float map(float x, float in_min, float in_max, float out_min, float out_max)
 bool rate_sent = false;
 bool Send_EE_Rates(){
 	bool send = false;
+	//check for non zero rates, this is to eliminate topic spam
+	//actually now that i think about it.. try removing this and rate_sent
 	for ( int i = 0; i < 7; i++){
 		if (ee_rates[i] != 0.0 ){
 			send = true;
 			break;
 		}
 	}
-	if (send || !rate_sent){
+	if (send || !rate_sent){//only send if non zero
 		rate_sent = true;
-		ROS_INFO("Sending EE_RATES: \n\t< %.4f ,  %.4f ,  %.4f ,  %.4f ,  %.4f ,  %.4f >\n\tMoving Gripper: <%.4f>",ee_rates[0],ee_rates[1],ee_rates[2],ee_rates[3],ee_rates[4],ee_rates[5],ee_rates[6]);
+		ROS_INFO("Sending EE_RATES: \n\t< %.6f ,  %.6f ,  %.6f >\n\t<  %.6f ,  %.6f ,  %.6f >\n\tMoving Gripper: <%.6f>",ee_rates[0],ee_rates[1],ee_rates[2],ee_rates[3],ee_rates[4],ee_rates[5],ee_rates[6]);
 		std_msgs::Float64MultiArray msg;
 		msg.data=ee_rates;
 		ee_rate_pub.publish(msg);
@@ -288,41 +265,114 @@ bool Send_EE_Rates(){
 
 	return send;
 }
+/*
+ * Buttons:
+ * index		XBOX mapping		PS3 mapping
+ * 0				A					select
+ * 1				B					left stick push
+ * 2				X					right stick push
+ * 3				Y					start
+ * 4				LB					up dpad
+ * 5				RB					right dpad
+ * 6				back					down dpad
+ * 7				start				left dpad
+ * 8				power				left trigger
+ * 9				Button stick left	right trigger
+ * 10				Button stick right 	left bumper
+ * 11									right bumper
+ * 12			 						triangle
+ * 13			 						circle
+ * 14									x
+ * 15			 						square
+ *
+ * Axis:
+ * 	0				left stick, l/r		==
+ * 	1				left stick, u/d		==
+ * 	2				right stick l/r		==
+ * 	3				right stick u/d		==
+ * 	4				right trigger
+ * 	5				left trigger
+ * 	6				dpad left right
+ * 	7				dpad up down
+ * 	8
+ * 	9
+ * 	10
+ * 	11
+ * 	12
+ * 	13
+ * 	14
+ * 	15
+ * 	16									pitch
+ * 	17									roll
+ * 	18
+ * 	19									yaw
+ * 	20
+ *
+ */
+int map_ps3_to_xbox[] = {  };
+std::vector<int> remap(std::vector<int> in, std::vector<int> map){
+	std::vector<int> out(in.size());
+	for( int i = 0; i < in.size(); i++){
+		out[i]=in[map[i]];//A=X
+	}
+	return out;
+}
+
 bool handle_buttons( std::vector<int> buttons){
-	if(buttons[0] > 0){//A button
-		Send_Command("snap");
-	}
-	if(buttons[1] > 0){//B button
-		Send_Command("stop");
-	}
-	if(buttons[2] > 0){//X button
-		Change_EE_Type("frame_end_effector");
-		ROS_INFO("Switching control to FRAME_EE_MODE");//open gripper
-	}
-	if(buttons[3] > 0){//Y button
-		Change_EE_Type("point_end_effector");
-		ROS_INFO("Switching control to POINT_EE_MODE");//open gripper
-	}
-	if(buttons[4] > 0){//LB button
-		ROS_INFO("OPENNING GRIPPER");//open gripper
-		ee_rates[6] = GRIPPER_GAIN;
-		rate_sent = false;
-	}
-	else if(buttons[5] > 0){//RB button
-		ROS_INFO("CLOSING GRIPPER");//open gripper
-		ee_rates[6] = -GRIPPER_GAIN;
-		rate_sent = false;
-	}
-	else
-		ee_rates[6] = 0;
-	if(buttons[6] > 0){//back button
-		Send_Command("test");
+	if(buttons[6] > 0 ){//back button
+		if( buttons[7] > 0){//AND start
+			Send_Command("test");
+		}
+		if( buttons[0] > 0){//AND A
+			Send_Command("getPose");
+		}
+		if( buttons[3] > 0){//AND Y
+			ROS_INFO("Moving to next saved position...");
+			Send_Command("nextPose");
+		}
 		//
+	}
+	else{//not holding back button
+		if(buttons[0] > 0){//A button
+			Send_Command("snap");
+		}
+		if(buttons[1] > 0){//B button
+			Send_Command("stop");
+		}
+		if(buttons[2] > 0){//X button
+			Change_EE_Type("frame_end_effector");
+			ROS_INFO("Switching control to FRAME_EE_MODE");//open gripper
+		}
+		if(buttons[3] > 0){//Y button
+			Change_EE_Type("point_end_effector");
+			ROS_INFO("Switching control to POINT_EE_MODE");//open gripper
+		}
+		if(buttons[4] > 0){//LB button
+			ROS_INFO("OPENNING GRIPPER");//open gripper
+			ee_rates[6] = GRIPPER_GAIN;
+			rate_sent = false;
+		}
+		else if(buttons[5] > 0){//RB button
+			ROS_INFO("CLOSING GRIPPER");//open gripper
+			ee_rates[6] = -GRIPPER_GAIN;
+			rate_sent = false;
+		}
+		else
+			ee_rates[6] = 0;
+		if(buttons[8] > 0){
+			ROS_INFO("Resetting to Home Position...");
+			Send_Command("goHome");
+		}
+		if(buttons[9] > 0 && buttons[10] > 0){
+			ROS_INFO("Clearing Saved Positions...");
+			Send_Command("clearPose");
+		}
 	}
 	return true;
 }
+//a function to handle the xbox data
+void handle_xbox(const sensor_msgs::Joy::ConstPtr& msg){
 
-void handle_joystick( const sensor_msgs::Joy::ConstPtr& msg){
 	/*ee_rates[0] =
 			for(unsigned i = 0; i < msg->axes.size(); i++){
 				if( handle_axis(i,msg->axes[i]) ){
@@ -331,6 +381,9 @@ void handle_joystick( const sensor_msgs::Joy::ConstPtr& msg){
 			}*/
 	for(unsigned i = 0; i < msg->axes.size()-1; i++){//first 4 axis, and not the last
 		//ROS_INFO("Modifying axis %d.",i);
+		if( i > ee_rates.size()-1){
+			break;
+		}
 		if( fabs(msg->axes[i]) > DEADZONE ){
 			ee_rates[axis_map[i]] = ( AXIS_GAIN[axis_map[i]] * msg->axes[i] );
 
@@ -342,6 +395,8 @@ void handle_joystick( const sensor_msgs::Joy::ConstPtr& msg){
 			i+=2;//skip 4 and 5
 		}
 	}
+	//special case for xbox controller, 4 and 5 are triggers
+	//lets make one + and the other -
 	float value = map(msg->axes[4] , 1.0 , -1.0 , 0.0 , -1.0 );
 		  value += map(msg->axes[5] , 1.0 , -1.0 , 0.0 , 1.0 );
 	ee_rates[5] = ( AXIS_GAIN[4] * value );
@@ -351,6 +406,38 @@ void handle_joystick( const sensor_msgs::Joy::ConstPtr& msg){
 	}*/
 	handle_buttons(msg->buttons);
 	rate_sent = false;
+}
+
+//can delete these once handle_joystick is not longer used
+const int XBOX_AXIS_SIZE = 8;
+const int SHIELD_AXIS_SIZE = 8;
+const int PS3_AXIS_SIZE = 20;
+const int WII_AXIS_SIZE = 6;
+
+//this function is being phased out by using unique topic names
+//currently checks length of axis
+//will no longer be necessary once all topics have been renamed
+void handle_joystick( const sensor_msgs::Joy::ConstPtr& msg){
+	int id = msg->axes.size();
+	if ( id == XBOX_AXIS_SIZE ){
+		//this is an xbox controller
+		handle_xbox(msg);
+	}
+	else if ( id == SHIELD_AXIS_SIZE ){
+		//this is an NVIDIA Shield controller
+		handle_xbox(msg);
+	}
+	else if ( id == PS3_AXIS_SIZE ){
+		//this is a ps3 controller
+		handle_xbox(msg);
+	}
+	else if ( id == WII_AXIS_SIZE ){
+		//this is a wii controller
+		ROS_INFO("Wii controller found.");
+	}
+	else
+		ROS_INFO("Unknown controller, axis size: %d",id);
+
 }
 void handle_command( const std_msgs::Int32::ConstPtr& msg){
 	int command = msg->data;
@@ -457,6 +544,10 @@ int main(int argc, char **argv)
 	execute_pub = n.advertise<std_msgs::String>("execute", 1);
 
 	ros::Subscriber sub_joy = n.subscribe("joy",5,handle_joystick);
+	//ros::Subscriber sub_joy_xbox = n.subscribe("joy/xbox",5,handle_xbox);
+	//ros::Subscriber sub_joy_xbox = n.subscribe("joy/spacenav",5,handle_spnav);
+	//ros::Subscriber sub_joy_ps3 = n.subscribe("joy/ps3",5,handle_ps3);
+	//ros::Subscriber sub_joy_wii = n.subscribe("joy/wii",5,handle_wii);
 	ros::Subscriber sub_cmd = n.subscribe("shield_commands/pos",50,handle_command);
 	//ros::Subscriber sub_rot = n.subscribe("shield_commands/rotate",5,handle_rotate);
 	//ros::Subscriber sub_scale = n.subscribe("shield_commands/scale",5,handle_scale);

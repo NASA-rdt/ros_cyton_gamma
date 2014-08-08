@@ -6,6 +6,7 @@
 /home/nasa/catkin_ws/build/ros_cyton_pkg/CMakeFiles/ros_cyton_client_gripper_demo.dir
 /home/nasa/catkin_ws/build/ros_cyton_pkg/CMakeFiles/ros_cyton_client_joint_demo.dir
 /home/nasa/catkin_ws/build/ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_demo.dir
+/home/nasa/catkin_ws/build/ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir
 /home/nasa/catkin_ws/build/ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir
 /home/nasa/catkin_ws/build/ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_gencpp.dir
 /home/nasa/catkin_ws/build/ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir

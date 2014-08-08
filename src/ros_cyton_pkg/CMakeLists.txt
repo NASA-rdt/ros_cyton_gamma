@@ -48,9 +48,9 @@ add_executable(ros_cyton_client_gripper_demo src/ros_cyton_client_gripper_demo.c
 target_link_libraries(ros_cyton_client_gripper_demo ${catkin_LIBRARIES})
 add_dependencies(ros_cyton_client_gripper_demo ros_cyton_pkg_generate_messages_cpp)
 
-add_executable(ros_cyton_client_joystick_demo src/ros_cyton_client_joystick_demo.cpp)
-target_link_libraries(ros_cyton_client_joystick_demo ${catkin_LIBRARIES})
-add_dependencies(ros_cyton_client_joystick_demo ros_cyton_pkg_generate_messages_cpp)
+#add_executable(ros_cyton_client_joystick_demo src/ros_cyton_client_joystick_demo.cpp)
+#target_link_libraries(ros_cyton_client_joystick_demo ${catkin_LIBRARIES})
+#add_dependencies(ros_cyton_client_joystick_demo ros_cyton_pkg_generate_messages_cpp)
 
 
 add_executable(ros_cyton_client_joystick_helper src/ros_cyton_client_joystick_helper.cpp)

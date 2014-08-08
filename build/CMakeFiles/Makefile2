@@ -259,6 +259,7 @@ ros_cyton_pkg/all: ros_cyton_pkg/CMakeFiles/ros_cyton_client_frame_ee_demo.dir/a
 ros_cyton_pkg/all: ros_cyton_pkg/CMakeFiles/ros_cyton_client_gripper_demo.dir/all
 ros_cyton_pkg/all: ros_cyton_pkg/CMakeFiles/ros_cyton_client_joint_demo.dir/all
 ros_cyton_pkg/all: ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_demo.dir/all
+ros_cyton_pkg/all: ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/all
 ros_cyton_pkg/all: ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir/all
 ros_cyton_pkg/all: ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir/all
 ros_cyton_pkg/all: ros_cyton_pkg/CMakeFiles/ros_cyton_server.dir/all
@@ -269,6 +270,7 @@ ros_cyton_pkg/clean: ros_cyton_pkg/CMakeFiles/ros_cyton_client_frame_ee_demo.dir
 ros_cyton_pkg/clean: ros_cyton_pkg/CMakeFiles/ros_cyton_client_gripper_demo.dir/clean
 ros_cyton_pkg/clean: ros_cyton_pkg/CMakeFiles/ros_cyton_client_joint_demo.dir/clean
 ros_cyton_pkg/clean: ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_demo.dir/clean
+ros_cyton_pkg/clean: ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/clean
 ros_cyton_pkg/clean: ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir/clean
 ros_cyton_pkg/clean: ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_gencpp.dir/clean
 ros_cyton_pkg/clean: ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir/clean
@@ -434,13 +436,48 @@ clean: ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_demo.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Target rules for target ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir
+
+# All Build rule for target.
+ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/all: ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages_cpp.dir/all
+	$(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/depend
+	$(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/build
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/nasa/catkin_ws/build/CMakeFiles  8
+	@echo "Built target ros_cyton_client_joystick_helper"
+.PHONY : ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/all
+
+# Include target in all.
+all: ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/all
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nasa/catkin_ws/build/CMakeFiles 1
+	$(MAKE) -f CMakeFiles/Makefile2 ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nasa/catkin_ws/build/CMakeFiles 0
+.PHONY : ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/rule
+
+# Convenience name for target.
+ros_cyton_client_joystick_helper: ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/rule
+.PHONY : ros_cyton_client_joystick_helper
+
+# clean rule for target.
+ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/clean:
+	$(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/clean
+.PHONY : ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/clean
+
+# clean rule for target.
+clean: ros_cyton_pkg/CMakeFiles/ros_cyton_client_joystick_helper.dir/clean
+.PHONY : clean
+
+#=============================================================================
 # Target rules for target ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir
 
 # All Build rule for target.
 ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir/all: ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages_cpp.dir/all
 	$(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir/depend
 	$(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/nasa/catkin_ws/build/CMakeFiles  8
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/nasa/catkin_ws/build/CMakeFiles  9
 	@echo "Built target ros_cyton_client_point_ee_demo"
 .PHONY : ros_cyton_pkg/CMakeFiles/ros_cyton_client_point_ee_demo.dir/all
 
@@ -503,9 +540,9 @@ clean: ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_gencpp.dir/clean
 # Target rules for target ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir
 
 # All Build rule for target.
+ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir/all: ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages_py.dir/all
 ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir/all: ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages_lisp.dir/all
 ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir/all: ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages_cpp.dir/all
-ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir/all: ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages_py.dir/all
 	$(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir/depend
 	$(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages.dir/build
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/nasa/catkin_ws/build/CMakeFiles 
@@ -698,7 +735,7 @@ clean: ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_genpy.dir/clean
 ros_cyton_pkg/CMakeFiles/ros_cyton_server.dir/all: ros_cyton_pkg/CMakeFiles/ros_cyton_pkg_generate_messages_cpp.dir/all
 	$(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_server.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_server.dir/depend
 	$(MAKE) -f ros_cyton_pkg/CMakeFiles/ros_cyton_server.dir/build.make ros_cyton_pkg/CMakeFiles/ros_cyton_server.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/nasa/catkin_ws/build/CMakeFiles  9 10
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/nasa/catkin_ws/build/CMakeFiles  10 11
 	@echo "Built target ros_cyton_server"
 .PHONY : ros_cyton_pkg/CMakeFiles/ros_cyton_server.dir/all
 
