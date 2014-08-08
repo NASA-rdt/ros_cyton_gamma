@@ -1,5 +1,5 @@
 #ROS Cyton Gamma Package
-##Modified by William Baker, Summer 2014
+##Modified by William Baker, GSFC - Summer 2014
 
 ###Launching the Cyton Viewer and ROS Nodes:
 ####Note: run each section of code in a new terminal.

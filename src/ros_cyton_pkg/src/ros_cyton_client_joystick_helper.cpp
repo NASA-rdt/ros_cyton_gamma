@@ -354,6 +354,49 @@ void handle_xbox(const sensor_msgs::Joy::ConstPtr& msg){
 	handle_buttons(msg->buttons);
 	rate_sent = false;
 }
+void handle_ps3(const sensor_msgs::Joy::ConstPtr& msg){
+
+	/*ee_rates[0] =
+			for(unsigned i = 0; i < msg->axes.size(); i++){
+				if( handle_axis(i,msg->axes[i]) ){
+					moved = true;//ROS_INFO("Axis %d is now at position: %f",i,msg->axes[i]);//
+				}
+			}*/
+	for(unsigned i = 0; i < msg->axes.size()-1; i++){//first 4 axis, and not the last
+		//ROS_INFO("Modifying axis %d.",i);
+		if( i > ee_rates.size()-1){
+			break;
+		}
+		if( fabs(msg->axes[i]) > DEADZONE ){
+			ee_rates[axis_map[i]] = ( AXIS_GAIN[axis_map[i]] * msg->axes[i] );
+
+		}
+		else{
+			ee_rates[axis_map[i]] = 0;
+		}
+		if ( i == 3 ){
+			i+=2;//skip 4 and 5
+		}
+	}
+	//special case for xbox controller, 4 and 5 are triggers
+	//lets make one + and the other -
+	float value = map(msg->axes[4] , 1.0 , -1.0 , 0.0 , -1.0 );
+		  value += map(msg->axes[5] , 1.0 , -1.0 , 0.0 , 1.0 );
+	ee_rates[5] = ( AXIS_GAIN[4] * value );
+	/*if (moved){//if a joystick was moved
+		ROS_INFO("Modifying pose by: < %.3f , %.3f , %.3f >",msg->axes[0],msg->axes[1],msg->axes[2]);
+		Modify_EE_Pose("point_end_effector",ee_pose);
+	}*/
+	handle_buttons(remap(msg->buttons,"ps3"));
+	rate_sent = false;
+}
+std::vector<int> remap(std::vector<int> in, const char* type){
+	std::vector<int> out(in.size());
+	if (type == "ps3"){
+
+	}
+	return out;
+}
 
 //can delete these once handle_joystick is not longer used
 const int XBOX_AXIS_SIZE = 8;
@@ -376,7 +419,6 @@ void handle_joystick( const sensor_msgs::Joy::ConstPtr& msg){
 	}
 	else if ( id == PS3_AXIS_SIZE ){
 		//this is a ps3 controller
-		ROS_INFO("Ps3 controller found.");
 		handle_xbox(msg);
 	}
 	else if ( id == WII_AXIS_SIZE ){
