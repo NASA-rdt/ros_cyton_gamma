@@ -1,0 +1,8 @@
+prefix=/home/nasa/catkinWS/install
+
+Name: ros_cyton_pkg
+Description: Description of ros_cyton_pkg
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/nasa/catkinWS/install/lib 
+Requires: 
