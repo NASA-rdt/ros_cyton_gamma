@@ -265,6 +265,59 @@ bool Send_EE_Rates(){
 
 	return send;
 }
+/*
+ * Buttons:
+ * index		XBOX mapping		PS3 mapping
+ * 0				A					select
+ * 1				B					left stick push
+ * 2				X					right stick push
+ * 3				Y					start
+ * 4				LB					up dpad
+ * 5				RB					right dpad
+ * 6				back					down dpad
+ * 7				start				left dpad
+ * 8				power				left trigger
+ * 9				Button stick left	right trigger
+ * 10				Button stick right 	left bumper
+ * 11									right bumper
+ * 12			 						triangle
+ * 13			 						circle
+ * 14									x
+ * 15			 						square
+ *
+ * Axis:
+ * 	0				left stick, l/r		==
+ * 	1				left stick, u/d		==
+ * 	2				right stick l/r		==
+ * 	3				right stick u/d		==
+ * 	4				right trigger
+ * 	5				left trigger
+ * 	6				dpad left right
+ * 	7				dpad up down
+ * 	8
+ * 	9
+ * 	10
+ * 	11
+ * 	12
+ * 	13
+ * 	14
+ * 	15
+ * 	16									pitch
+ * 	17									roll
+ * 	18
+ * 	19									yaw
+ * 	20
+ *
+ */
+int map_ps3_to_xbox[] = {  };
+std::vector<int> remap(std::vector<int> in, std::vector<int> map){
+	std::vector<int> out(in.size());
+	for( int i = 0; i < in.size(); i++){
+		out[i]=in[map[i]];//A=X
+	}
+	return out;
+}
+
 bool handle_buttons( std::vector<int> buttons){
 	if(buttons[6] > 0 ){//back button
 		if( buttons[7] > 0){//AND start
@@ -353,49 +406,6 @@ void handle_xbox(const sensor_msgs::Joy::ConstPtr& msg){
 	}*/
 	handle_buttons(msg->buttons);
 	rate_sent = false;
-}
-void handle_ps3(const sensor_msgs::Joy::ConstPtr& msg){
-
-	/*ee_rates[0] =
-			for(unsigned i = 0; i < msg->axes.size(); i++){
-				if( handle_axis(i,msg->axes[i]) ){
-					moved = true;//ROS_INFO("Axis %d is now at position: %f",i,msg->axes[i]);//
-				}
-			}*/
-	for(unsigned i = 0; i < msg->axes.size()-1; i++){//first 4 axis, and not the last
-		//ROS_INFO("Modifying axis %d.",i);
-		if( i > ee_rates.size()-1){
-			break;
-		}
-		if( fabs(msg->axes[i]) > DEADZONE ){
-			ee_rates[axis_map[i]] = ( AXIS_GAIN[axis_map[i]] * msg->axes[i] );
-
-		}
-		else{
-			ee_rates[axis_map[i]] = 0;
-		}
-		if ( i == 3 ){
-			i+=2;//skip 4 and 5
-		}
-	}
-	//special case for xbox controller, 4 and 5 are triggers
-	//lets make one + and the other -
-	float value = map(msg->axes[4] , 1.0 , -1.0 , 0.0 , -1.0 );
-		  value += map(msg->axes[5] , 1.0 , -1.0 , 0.0 , 1.0 );
-	ee_rates[5] = ( AXIS_GAIN[4] * value );
-	/*if (moved){//if a joystick was moved
-		ROS_INFO("Modifying pose by: < %.3f , %.3f , %.3f >",msg->axes[0],msg->axes[1],msg->axes[2]);
-		Modify_EE_Pose("point_end_effector",ee_pose);
-	}*/
-	handle_buttons(remap(msg->buttons,"ps3"));
-	rate_sent = false;
-}
-std::vector<int> remap(std::vector<int> in, const char* type){
-	std::vector<int> out(in.size());
-	if (type == "ps3"){
-
-	}
-	return out;
 }
 
 //can delete these once handle_joystick is not longer used
