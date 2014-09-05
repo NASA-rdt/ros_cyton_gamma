@@ -30,7 +30,8 @@ roscore #starts the ROS Master
 
 #process to open ros-cyton server
 cd ~/catkin_ws/build/bin
-./ros_cyton_server
+./ros_cyton_server -c 300 
+#./ros_cyton_server -c 1500 #for gamma 1500
 
 #process to open ros client
 cd ~/catkin_ws/build/bin
